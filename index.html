@@ -11,7 +11,9 @@
     <title>R&C</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@latest/dist/mpegts.min.js"></script>
 
     <style>
         :root { --bg: #000000; --gold: #FFD700; --card-bg: #1a1a1a; --focus-bg: #FFD700; }
@@ -213,7 +215,7 @@
         };
 
         var PlayerEngine = {
-            hls: null, video: null, url: null, retryCount: 0, monitorTimer: null, lastTime: 0, stallCount: 0,
+            hls: null, tsPlayer: null, video: null, url: null, retryCount: 0, monitorTimer: null, lastTime: 0, stallCount: 0,
             init: function() { 
                 this.video = document.getElementById('player'); 
                 this.video.onerror = function() { PlayerEngine.recover(); }; 
@@ -226,11 +228,26 @@
                 if(isLive) { this.video.classList.add('live'); } 
                 else { this.video.classList.remove('live'); }
                 
-                // MONITORAMENTO APENAS PARA HLS, IGNORA NO TS
-                if(url.indexOf('.m3u8') > -1) this.startMonitor();
-                
-                // MODO SS-IPTV PARA .TS (Vai direto pro hardware da TV, ignora o HLS.js)
-                if (url.indexOf('.m3u8') > -1) { 
+                // Escolha do decodificador correto com base no link
+                if (url.indexOf('.ts') > -1) {
+                    // MODO .TS (Usando o tradutor mpegts.js)
+                    if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
+                        this.tsPlayer = mpegts.createPlayer({
+                            type: 'mse', 
+                            isLive: isLive, 
+                            url: url 
+                        });
+                        this.tsPlayer.attachMediaElement(this.video);
+                        this.tsPlayer.load();
+                        this.tsPlayer.play().catch(function(e){ console.log(e); });
+                    } else {
+                        // Tenta nativo se o mpegts falhar (improvável)
+                        this.video.src = url;
+                        this.video.play().catch(function(e) { console.log(e); });
+                    }
+                } else if (url.indexOf('.m3u8') > -1) {
+                    // MODO .M3U8 (Usando HLS.js)
+                    this.startMonitor();
                     var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
                     if (canPlayNative === "probably" || canPlayNative === "maybe") { 
                         this.video.src = url; 
@@ -242,9 +259,9 @@
                         this.video.play().catch(function(e) { console.log(e); }); 
                     }
                 } else {
-                    // SE FOR .TS OU .MP4, VAI DIRETO
-                    this.video.src = url; 
-                    this.video.play().catch(function(e) { console.log(e); }); 
+                    // MODO MP4 e Outros Nativos
+                    this.video.src = url;
+                    this.video.play().catch(function(e) { console.log(e); });
                 }
             },
             startHls: function(url) {
@@ -255,8 +272,8 @@
                 this.hls.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) { 
                         switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR: PlayerEngine.hls.startLoad(); break; // Mensagem na tela removida
-                            case Hls.ErrorTypes.MEDIA_ERROR: PlayerEngine.hls.recoverMediaError(); break; // Mensagem na tela removida
+                            case Hls.ErrorTypes.NETWORK_ERROR: PlayerEngine.hls.startLoad(); break;
+                            case Hls.ErrorTypes.MEDIA_ERROR: PlayerEngine.hls.recoverMediaError(); break;
                             default: PlayerEngine.recover(); break;
                         }
                     }
@@ -270,7 +287,6 @@
                         PlayerEngine.stallCount++;
                         if(PlayerEngine.stallCount > 5) { 
                             PlayerEngine.stallCount = 0; 
-                            // Mensagem "Aguardando Rede" removida
                             if(PlayerEngine.hls) { PlayerEngine.hls.recoverMediaError(); PlayerEngine.hls.startLoad(); } else { PlayerEngine.recover(); } 
                         }
                     } else { PlayerEngine.stallCount = 0; PlayerEngine.lastTime = v.currentTime; PlayerEngine.retryCount = 0; }
@@ -279,8 +295,7 @@
             stopMonitor: function() { if(this.monitorTimer) clearInterval(this.monitorTimer); },
             recover: function() {
                 this.retryCount++;
-                if(this.retryCount > 10 && App.mode !== 'live') { this.stop(); return; } // Mensagem "Sinal Perdido" removida
-                // Mensagem "Restaurando" removida
+                if(this.retryCount > 10 && App.mode !== 'live') { this.stop(); return; }
                 setTimeout(function(){ 
                     if(PlayerEngine.url.indexOf('.m3u8') > -1) { 
                         PlayerEngine.startHls(PlayerEngine.url); 
@@ -292,6 +307,7 @@
             stop: function() { 
                 this.stopMonitor(); 
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
+                if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
                 if(this.video) { 
                     this.video.pause(); this.video.removeAttribute('src'); this.video.load(); 
                     try {
