@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C</title>
+    <title>R&C GOLD PRO - Fusion Edition (Otimizado HD)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -31,6 +31,9 @@
         .layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: #000; }
 
         button, .smart-card, .cat-item, .item, .power-btn, .key, .toggle-btn { cursor: pointer; }
+
+        /* ACELERAÇÃO DE HARDWARE (GPU) PARA EVITAR SUPERAQUECIMENTO E TRAVAMENTOS DA CPU */
+        .cat-list, .item-list, .vid-box, video { transform: translateZ(0); will-change: transform; }
 
         .focused { border: 3px solid #fff !important; background: var(--focus-bg) !important; color: #000 !important; z-index: 50; box-shadow: none !important; }
         #vid-box.focused { border: 4px solid var(--gold) !important; box-shadow: none !important; z-index: 60; }
@@ -133,7 +136,7 @@
             <div class="config-row" style="margin-top: 20px;"><div id="s0" class="toggle-btn focusable" style="border-color: #333; background: #111; cursor: default;">--- MENU DE OPÇÕES ---</div></div>
             <div class="config-row">
                 <div id="s1" class="toggle-btn focusable" onclick="App.toggleCfg('filter')">PORN BLOCK: <span id="lbl-filter" style="color:#fff">SIM</span></div>
-                <div id="s2" class="toggle-btn focusable" onclick="App.toggleFormat()">FORMATO: <span id="lbl-format" style="color:#fff">PADRÃO</span></div>
+                <div id="s2" class="toggle-btn focusable" onclick="App.toggleFormat()">FORMATO TV: <span id="lbl-format" style="color:#fff">PADRÃO</span></div>
             </div>
             <button id="s3" class="btn focusable" onclick="App.closeSettings()" style="background: #333; color: #fff;">VOLTAR AO MENU</button>
         </div>
@@ -228,25 +231,17 @@
                 if(isLive) { this.video.classList.add('live'); } 
                 else { this.video.classList.remove('live'); }
                 
-                // Escolha do decodificador correto com base no link
                 if (url.indexOf('.ts') > -1) {
-                    // MODO .TS (Usando o tradutor mpegts.js)
                     if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
-                        this.tsPlayer = mpegts.createPlayer({
-                            type: 'mse', 
-                            isLive: isLive, 
-                            url: url 
-                        });
+                        this.tsPlayer = mpegts.createPlayer({ type: 'mse', isLive: isLive, url: url });
                         this.tsPlayer.attachMediaElement(this.video);
                         this.tsPlayer.load();
                         this.tsPlayer.play().catch(function(e){ console.log(e); });
                     } else {
-                        // Tenta nativo se o mpegts falhar (improvável)
                         this.video.src = url;
                         this.video.play().catch(function(e) { console.log(e); });
                     }
                 } else if (url.indexOf('.m3u8') > -1) {
-                    // MODO .M3U8 (Usando HLS.js)
                     this.startMonitor();
                     var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
                     if (canPlayNative === "probably" || canPlayNative === "maybe") { 
@@ -259,7 +254,7 @@
                         this.video.play().catch(function(e) { console.log(e); }); 
                     }
                 } else {
-                    // MODO MP4 e Outros Nativos
+                    // Padrão limpo sem extensão ou MP4 original
                     this.video.src = url;
                     this.video.play().catch(function(e) { console.log(e); });
                 }
@@ -306,6 +301,7 @@
             },
             stop: function() { 
                 this.stopMonitor(); 
+                // Esvaziador agressivo de RAM (Garbage Collector manual)
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
                 if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
                 if(this.video) { 
@@ -358,7 +354,7 @@
                 document.getElementById('s1').style.borderColor = this.cfg.filter ? '#00C851' : '#444'; 
                 document.getElementById('lbl-filter').style.color = this.cfg.filter ? '#00C851' : '#888'; 
                 
-                var fLbl = "PADRÃO";
+                var fLbl = "PADRÃO (ORIGINAL)";
                 if(this.cfg.format === 'hls') fLbl = "HLS (.m3u8)";
                 if(this.cfg.format === 'ts') fLbl = "TS (.ts)";
                 document.getElementById('lbl-format').innerText = fLbl;
@@ -480,15 +476,18 @@
             },
 
             playStream: function(item) {
-                var ext = (this.mode==='live')?'mp4':(item.container_extension||'mp4'); 
                 var type = (this.mode==='live')?'live':(this.mode==='movie'?'movie':'series'); 
                 var id = item.stream_id || item.id; 
+                var ext = (this.mode==='live')?'':(item.container_extension||'mp4'); // Padrão Live: SEM extensão
                 
-                if(this.cfg.format === 'hls') ext = 'm3u8';
-                if(this.cfg.format === 'ts') ext = 'ts';
-                if(this.mode === 'live' && this.cfg.format === 'default') ext = 'm3u8'; 
-
-                var url = this.creds.h+"/"+type+"/"+this.creds.u+"/"+this.creds.p+"/"+id+"."+ext;
+                if (this.mode === 'live') {
+                    if (this.cfg.format === 'hls') ext = 'm3u8';
+                    else if (this.cfg.format === 'ts') ext = 'ts';
+                    else ext = ''; // O Padrão agora não usa nenhuma extensão final (.ts ou .m3u8)
+                }
+                
+                var url = this.creds.h+"/"+type+"/"+this.creds.u+"/"+this.creds.p+"/"+id;
+                if (ext !== '') { url += "." + ext; }
                 
                 this.playingId = id; document.getElementById('meta-title').innerText = item.name || item.title; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').classList.add('hide');
                 
