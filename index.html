@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO - Fusion Edition (Otimizado HD)</title>
+    <title>R&C</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -181,7 +181,7 @@
             <div class="meta">
                 <div id="meta-title" class="meta-title">R&C FUSION</div>
                 <div id="meta-epg" class="meta-epg hide"></div>
-                <div id="meta-desc" class="meta-desc">Selecione um conteúdo.</div>
+                <div id="meta-desc" class="meta-desc"></div>
                 <div class="keys">
                     <div class="key"><div class="dot" style="background:#ff4444"></div> TELA CHEIA (R)</div>
                     <div class="key"><div class="dot" style="background:#00C851"></div> TOPO (G)</div>
@@ -223,19 +223,26 @@
                 this.stop(); 
                 this.url = url; this.retryCount = 0; this.stallCount = 0; this.video.controls = false; 
                 
-                // Agora respeita o formato escolhido no painel de configs
                 if(isLive) { this.video.classList.add('live'); } 
                 else { this.video.classList.remove('live'); }
                 
-                if(isLive || url.indexOf('.m3u8') > -1) this.startMonitor();
+                // MONITORAMENTO APENAS PARA HLS, IGNORA NO TS
+                if(url.indexOf('.m3u8') > -1) this.startMonitor();
                 
-                var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
-                if (canPlayNative === "probably" || canPlayNative === "maybe") { 
-                    this.video.src = url; 
-                    this.video.play().catch(function(){ if(Hls.isSupported()) PlayerEngine.startHls(url); }); 
-                } else if (Hls.isSupported()) { 
-                    this.startHls(url); 
-                } else { 
+                // MODO SS-IPTV PARA .TS (Vai direto pro hardware da TV, ignora o HLS.js)
+                if (url.indexOf('.m3u8') > -1) { 
+                    var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
+                    if (canPlayNative === "probably" || canPlayNative === "maybe") { 
+                        this.video.src = url; 
+                        this.video.play().catch(function(){ if(Hls.isSupported()) PlayerEngine.startHls(url); }); 
+                    } else if (Hls.isSupported()) { 
+                        this.startHls(url); 
+                    } else { 
+                        this.video.src = url; 
+                        this.video.play().catch(function(e) { console.log(e); }); 
+                    }
+                } else {
+                    // SE FOR .TS OU .MP4, VAI DIRETO
                     this.video.src = url; 
                     this.video.play().catch(function(e) { console.log(e); }); 
                 }
@@ -248,8 +255,8 @@
                 this.hls.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) { 
                         switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR: App.osd("BUSCANDO SINAL..."); PlayerEngine.hls.startLoad(); break;
-                            case Hls.ErrorTypes.MEDIA_ERROR: App.osd("AJUSTANDO..."); PlayerEngine.hls.recoverMediaError(); break;
+                            case Hls.ErrorTypes.NETWORK_ERROR: PlayerEngine.hls.startLoad(); break; // Mensagem na tela removida
+                            case Hls.ErrorTypes.MEDIA_ERROR: PlayerEngine.hls.recoverMediaError(); break; // Mensagem na tela removida
                             default: PlayerEngine.recover(); break;
                         }
                     }
@@ -261,16 +268,26 @@
                     var v = PlayerEngine.video; if(!v || !PlayerEngine.url || v.paused) return;
                     if(Math.abs(v.currentTime - PlayerEngine.lastTime) < 0.1) {
                         PlayerEngine.stallCount++;
-                        if(PlayerEngine.stallCount > 5) { PlayerEngine.stallCount = 0; App.osd("AGUARDANDO REDE..."); if(PlayerEngine.hls) { PlayerEngine.hls.recoverMediaError(); PlayerEngine.hls.startLoad(); } else { PlayerEngine.recover(); } }
+                        if(PlayerEngine.stallCount > 5) { 
+                            PlayerEngine.stallCount = 0; 
+                            // Mensagem "Aguardando Rede" removida
+                            if(PlayerEngine.hls) { PlayerEngine.hls.recoverMediaError(); PlayerEngine.hls.startLoad(); } else { PlayerEngine.recover(); } 
+                        }
                     } else { PlayerEngine.stallCount = 0; PlayerEngine.lastTime = v.currentTime; PlayerEngine.retryCount = 0; }
                 }, 2000);
             },
             stopMonitor: function() { if(this.monitorTimer) clearInterval(this.monitorTimer); },
             recover: function() {
                 this.retryCount++;
-                if(this.retryCount > 10 && App.mode !== 'live') { this.stop(); App.osd("SINAL PERDIDO"); return; }
-                App.osd("RESTAURANDO...");
-                setTimeout(function(){ if(App.mode === 'live' || PlayerEngine.url.indexOf('.m3u8') > -1) { PlayerEngine.startHls(PlayerEngine.url); } else { var v = document.getElementById('player'); v.load(); PlayerEngine.play(PlayerEngine.url, false); } }, 3000);
+                if(this.retryCount > 10 && App.mode !== 'live') { this.stop(); return; } // Mensagem "Sinal Perdido" removida
+                // Mensagem "Restaurando" removida
+                setTimeout(function(){ 
+                    if(PlayerEngine.url.indexOf('.m3u8') > -1) { 
+                        PlayerEngine.startHls(PlayerEngine.url); 
+                    } else { 
+                        var v = document.getElementById('player'); v.load(); PlayerEngine.play(PlayerEngine.url, false); 
+                    } 
+                }, 3000);
             },
             stop: function() { 
                 this.stopMonitor(); 
@@ -398,7 +415,7 @@
                 });
             },
             
-            resetInfo: function() { document.getElementById('meta-title').innerText = "R&C FUSION"; document.getElementById('meta-desc').innerText = "Selecione um conteúdo."; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
+            resetInfo: function() { document.getElementById('meta-title').innerText = "R&C FUSION"; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
             catClick: function(i) { this.idx=i; this.zone=0; this.renderLimit=50; this.loadContent(i); requestNativeFullscreen(); },
 
             loadContent: function(catIdx) {
@@ -451,14 +468,13 @@
                 var type = (this.mode==='live')?'live':(this.mode==='movie'?'movie':'series'); 
                 var id = item.stream_id || item.id; 
                 
-                // SISTEMA DE SELEÇÃO DE FORMATO APLICADO AQUI
                 if(this.cfg.format === 'hls') ext = 'm3u8';
                 if(this.cfg.format === 'ts') ext = 'ts';
                 if(this.mode === 'live' && this.cfg.format === 'default') ext = 'm3u8'; 
 
                 var url = this.creds.h+"/"+type+"/"+this.creds.u+"/"+this.creds.p+"/"+id+"."+ext;
                 
-                this.playingId = id; document.getElementById('meta-title').innerText = item.name || item.title; document.getElementById('meta-desc').innerText = "Carregando..."; document.getElementById('meta-epg').classList.add('hide');
+                this.playingId = id; document.getElementById('meta-title').innerText = item.name || item.title; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').classList.add('hide');
                 
                 if(this.mode === 'live') {
                     this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action=get_short_epg&stream_id="+id, function(d){
