@@ -18,7 +18,29 @@
     <style>
         :root { --bg: #000000; --gold: #FFD700; --card-bg: #1a1a1a; --focus-bg: #FFD700; }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        /* --- CORREÇÃO DO TOQUE/PESQUISA --- */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            outline: none; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none; /* Bloqueia o menu de toque longo (copiar/pesquisar) */
+            -webkit-user-select: none;   /* Bloqueia seleção de texto no Chrome/Safari mobile */
+            -moz-user-select: none;      /* Firefox */
+            -ms-user-select: none;       /* Edge */
+            user-select: none;           /* Padrão */
+        }
+        
+        /* Exceção para os campos de texto voltarem a funcionar normalmente */
+        input {
+            -webkit-touch-callout: default;
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
+        }
+        /* ---------------------------------- */
         
         html, body {
             background-color: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif;
@@ -103,7 +125,6 @@
 
         .col-play { flex: 1; background: #000; display: flex; flex-direction: column; position: relative; height: 100%; }
         .vid-box { width: 100%; height: 50vh; background: #000; position: relative; border-bottom: 2px solid #333; cursor: pointer; }
-        /* Alterado para fill para esticar a tela */
         video { width: 100%; height: 100%; background: #000; object-fit: fill !important; }
         
         .meta { padding: 20px; flex: 1; background: #080808; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
