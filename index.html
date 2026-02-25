@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO - Fusion Edition (Otimizado HD)</title>
+    <title>R&C GOLD PRO 👑 - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -41,7 +41,7 @@
         .focused i, .focused span, .focused div { color: #000 !important; }
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; }
-        .logo-txt { font-size: 28px; font-weight: 900; letter-spacing: -1px; color:#fff; margin-bottom: 20px; }
+        .logo-txt { font-size: 28px; font-weight: 900; letter-spacing: -1px; color:#fff; margin-bottom: 20px; text-transform: uppercase; }
         .logo-txt span { color: var(--gold); }
         .inp { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #444; color: #fff; text-align: center; font-weight: bold; border-radius: 6px; }
         .config-row { display: flex; gap: 10px; margin: 10px 0; }
@@ -53,7 +53,7 @@
 
         #dash-layer { display: flex; flex-direction: column; padding: 25px 40px; justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; height: 60px; flex-shrink: 0; margin-bottom: 15px; }
-        .dash-logo { font-size: 32px; font-weight: 900; letter-spacing: -2px; }
+        .dash-logo { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
         .dash-logo span { color: var(--gold); }
         .dash-clock { text-align: center; }
         .clock-time { font-size: 24px; font-weight: 700; color: #fff; }
@@ -117,7 +117,7 @@
 
     <div id="login-layer" class="layer flex-center hide">
         <div class="login-box">
-            <div class="logo-txt">R&C <span>FUSION</span></div>
+            <div class="logo-txt"><i class="fas fa-crown" style="margin-right:8px;"></i>R&C <span>GOLD PRO</span></div>
             <input type="text" id="i0" class="inp focusable" placeholder="URL DNS" autocomplete="off">
             <input type="text" id="i1" class="inp focusable" placeholder="USUÁRIO" autocomplete="off">
             <input type="password" id="i2" class="inp focusable" placeholder="SENHA" autocomplete="off">
@@ -128,7 +128,7 @@
 
     <div id="settings-layer" class="layer hide flex-center">
         <div class="login-box" style="width: 500px;">
-            <div class="logo-txt">MINHA <span>CONTA</span></div>
+            <div class="logo-txt"><i class="fas fa-crown" style="margin-right:8px;"></i>MINHA <span>CONTA</span></div>
             <div class="info-row">NOME DE USUÁRIO: <span id="set-user">...</span></div>
             <div class="info-row">DATA DE VENCIMENTO: <span id="set-exp">...</span></div>
             <div class="info-row">LIMITE DE TELAS: <span id="set-conn">...</span></div>
@@ -144,7 +144,7 @@
 
     <div id="dash-layer" class="layer hide">
         <div class="top-bar">
-            <div class="dash-logo">R&C <span>GOLD</span></div>
+            <div class="dash-logo"><i class="fas fa-crown" style="margin-right:8px;"></i>R&C <span>GOLD PRO</span></div>
             <div class="dash-clock"><div id="clock-time" class="clock-time">12:00</div><div id="clock-date" class="clock-date">--/--/----</div></div>
             <div class="top-actions">
                 <div id="m3" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
@@ -184,7 +184,7 @@
             </div>
             
             <div class="meta">
-                <div id="meta-title" class="meta-title">R&C FUSION</div>
+                <div id="meta-title" class="meta-title"><i class="fas fa-crown" style="color:var(--gold)"></i> R&C GOLD PRO</div>
                 <div id="meta-epg" class="meta-epg hide"></div>
                 <div id="meta-desc" class="meta-desc"></div>
                 <div class="keys">
@@ -254,7 +254,6 @@
                         this.video.play().catch(function(e) { console.log(e); }); 
                     }
                 } else {
-                    // Padrão limpo sem extensão ou MP4 original
                     this.video.src = url;
                     this.video.play().catch(function(e) { console.log(e); });
                 }
@@ -301,7 +300,6 @@
             },
             stop: function() { 
                 this.stopMonitor(); 
-                // Esvaziador agressivo de RAM (Garbage Collector manual)
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
                 if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
                 if(this.video) { 
@@ -354,7 +352,7 @@
                 document.getElementById('s1').style.borderColor = this.cfg.filter ? '#00C851' : '#444'; 
                 document.getElementById('lbl-filter').style.color = this.cfg.filter ? '#00C851' : '#888'; 
                 
-                var fLbl = "PADRÃO (ORIGINAL)";
+                var fLbl = "PADRÃO (HLS)";
                 if(this.cfg.format === 'hls') fLbl = "HLS (.m3u8)";
                 if(this.cfg.format === 'ts') fLbl = "TS (.ts)";
                 document.getElementById('lbl-format').innerText = fLbl;
@@ -423,11 +421,21 @@
                             if(show) { count++; h += '<div class="cat-item" id="c'+count+'" data-id="'+d[i].category_id+'" onclick="App.catClick('+count+')">'+nome+'</div>'; }
                         }
                         document.getElementById('cat-list').innerHTML = h; App.zone=0; App.idx=0; App.updateFocus();
+                        
+                        // CACHE OCULTO: Pré-carrega todos os filmes/séries em background após 2 segundos para a busca ser instantânea!
+                        setTimeout(function() {
+                            if (!App.globalData) {
+                                var actAll = (m==='live')?'get_live_streams':(m==='movie'?'get_vod_streams':'get_series');
+                                App.req(App.creds.h+"/player_api.php?username="+App.creds.u+"&password="+App.creds.p+"&action="+actAll, function(dAll){ 
+                                    if(dAll && dAll!=='ERR_NET') App.globalData = dAll; 
+                                });
+                            }
+                        }, 2000);
                     }
                 });
             },
             
-            resetInfo: function() { document.getElementById('meta-title').innerText = "R&C FUSION"; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
+            resetInfo: function() { document.getElementById('meta-title').innerHTML = '<i class="fas fa-crown" style="color:var(--gold)"></i> R&C GOLD PRO'; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
             catClick: function(i) { this.idx=i; this.zone=0; this.renderLimit=50; this.loadContent(i); requestNativeFullscreen(); },
 
             loadContent: function(catIdx) {
@@ -478,12 +486,12 @@
             playStream: function(item) {
                 var type = (this.mode==='live')?'live':(this.mode==='movie'?'movie':'series'); 
                 var id = item.stream_id || item.id; 
-                var ext = (this.mode==='live')?'':(item.container_extension||'mp4'); // Padrão Live: SEM extensão
+                var ext = (this.mode==='live')?'m3u8':(item.container_extension||'mp4'); 
                 
                 if (this.mode === 'live') {
                     if (this.cfg.format === 'hls') ext = 'm3u8';
                     else if (this.cfg.format === 'ts') ext = 'ts';
-                    else ext = ''; // O Padrão agora não usa nenhuma extensão final (.ts ou .m3u8)
+                    else ext = 'm3u8'; // Padrão garantido pela estabilidade em navegadores
                 }
                 
                 var url = this.creds.h+"/"+type+"/"+this.creds.u+"/"+this.creds.p+"/"+id;
@@ -511,9 +519,34 @@
             },
 
             doSearch: function() {
-                var t = document.getElementById('search').value.toLowerCase(); if(t.length < 2) return; document.getElementById('item-list').innerHTML = '<div style="padding:20px">Buscando...</div>';
-                var cb = function(d) { if(d && d!=='ERR_NET') { App.fullData = d.filter(function(x){ return (x.name||x.title||"").toLowerCase().indexOf(t) > -1 }); App.isFolder = false; App.renderLimit = 50; App.renderList(); App.zone = 2; App.idx = 0; App.updateFocus(); } };
-                if(App.globalData) cb(App.globalData); else { var act = (App.mode==='live')?'get_live_streams':(App.mode==='movie'?'get_vod_streams':'get_series'); App.req(App.creds.h+"/player_api.php?username="+App.creds.u+"&password="+App.creds.p+"&action="+act, function(d){ App.globalData=d; cb(d); }); }
+                var t = document.getElementById('search').value.toLowerCase(); if(t.length < 2) return; 
+                
+                // Mensagem atualizada
+                document.getElementById('item-list').innerHTML = '<div style="padding:25px; text-align:center; color: var(--gold); font-weight: bold; font-size: 14px;"><i class="fas fa-circle-notch fa-spin" style="margin-right:8px;"></i> PROCURANDO...</div>';
+                
+                var cb = function(d) { 
+                    if(d && d!=='ERR_NET') { 
+                        var res = [];
+                        for(var i=0; i<d.length; i++) {
+                            if((d[i].name||d[i].title||"").toLowerCase().indexOf(t) > -1) {
+                                res.push(d[i]);
+                            }
+                        }
+                        App.fullData = res; App.isFolder = false; App.renderLimit = 50; App.renderList(); App.zone = 2; App.idx = 0; App.updateFocus(); 
+                    } else {
+                        document.getElementById('item-list').innerHTML = '<div style="padding:20px; text-align:center; color: red;">Erro ao buscar dados.</div>';
+                    }
+                };
+                
+                // Busca em milissegundos usando o cache
+                if(App.globalData) {
+                    cb(App.globalData); 
+                } else { 
+                    var act = (App.mode==='live')?'get_live_streams':(App.mode==='movie'?'get_vod_streams':'get_series'); 
+                    App.req(App.creds.h+"/player_api.php?username="+App.creds.u+"&password="+App.creds.p+"&action="+act, function(d){ 
+                        App.globalData=d; cb(d); 
+                    }); 
+                }
             },
             
             handleVideoTap: function(e) {
@@ -557,7 +590,7 @@
             back: function() {
                 if(document.getElementById('vid-box').classList.contains('fs')) { this.exitFull(); return; }
                 if(this.zone===3) { this.zone=2; this.syncFocusToPlaying(); this.updateFocus(); return; }
-                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerText = "R&C FUSION"; return; }
+                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerHTML = '<i class="fas fa-crown" style="color:var(--gold)"></i> R&C GOLD PRO'; return; }
                 if(this.zone===2) { this.zone=0; this.idx=this.lastCatIdx; this.updateFocus(); return; }
                 if(this.zone===1) { this.zone=2; this.idx=0; this.updateFocus(); return; }
                 if(this.zone===0) { this.setScr(1); return; }
