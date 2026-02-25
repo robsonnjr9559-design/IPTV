@@ -18,21 +18,20 @@
     <style>
         :root { --bg: #000000; --gold: #FFD700; --card-bg: #1a1a1a; --focus-bg: #FFD700; }
         
-        /* --- CORREÇÃO DO TOQUE/PESQUISA --- */
+        /* --- BLOQUEIO MÁXIMO DE SELEÇÃO E GESTOS --- */
         * { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
             outline: none; 
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none; /* Bloqueia o menu de toque longo (copiar/pesquisar) */
-            -webkit-user-select: none;   /* Bloqueia seleção de texto no Chrome/Safari mobile */
-            -moz-user-select: none;      /* Firefox */
-            -ms-user-select: none;       /* Edge */
-            user-select: none;           /* Padrão */
+            -webkit-touch-callout: none; 
+            -webkit-user-select: none;   
+            -moz-user-select: none;      
+            -ms-user-select: none;       
+            user-select: none;           
         }
         
-        /* Exceção para os campos de texto voltarem a funcionar normalmente */
         input {
             -webkit-touch-callout: default;
             -webkit-user-select: auto;
@@ -54,7 +53,6 @@
 
         button, .smart-card, .cat-item, .item, .power-btn, .key, .toggle-btn { cursor: pointer; }
 
-        /* ACELERAÇÃO DE HARDWARE (GPU) PARA EVITAR SUPERAQUECIMENTO E TRAVAMENTOS DA CPU */
         .cat-list, .item-list, .vid-box, video { transform: translateZ(0); will-change: transform; }
 
         .focused { border: 3px solid #fff !important; background: var(--focus-bg) !important; color: #000 !important; z-index: 50; box-shadow: none !important; }
@@ -62,17 +60,8 @@
         #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100% !important; z-index: 9999 !important; background: #000; }
         .focused i, .focused span, .focused div { color: #000 !important; }
 
-        /* --- ESTILIZAÇÃO DA COROA --- */
         .logo-wrapper { position: relative; display: inline-block; margin-right: 2px; }
-        .logo-wrapper i.fa-crown {
-            position: absolute;
-            top: -6px;
-            left: -14px;
-            font-size: 15px;
-            transform: rotate(-25deg);
-            color: var(--gold);
-            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
-        }
+        .logo-wrapper i.fa-crown { position: absolute; top: -6px; left: -14px; font-size: 15px; transform: rotate(-25deg); color: var(--gold); text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; }
         .logo-txt { font-size: 28px; font-weight: 900; letter-spacing: -1px; color:#fff; margin-bottom: 20px; text-transform: uppercase; }
@@ -112,14 +101,18 @@
         .btn-voltar:active { background: var(--gold); color: #000; border-color: var(--gold); }
         .cat-title-spacer { width: 32px; } 
         .cat-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .cat-item { padding: 12px 20px; border-bottom: 1px solid #1a1a1a; color: #999; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        
+        /* ADICIONADO TOUCH-ACTION NAS LISTAS PARA BLOQUEAR A PESQUISA NATIVA */
+        .cat-item { padding: 12px 20px; border-bottom: 1px solid #1a1a1a; color: #999; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; touch-action: pan-y; }
         .cat-item.active { border-left: 5px solid var(--gold); background: #181818; color: #fff; }
 
         .col-list { width: 35%; background: #111; border-right: 1px solid #222; display: flex; flex-direction: column; height: 100%; }
         .search-area { padding: 12px; background: #080808; border-bottom: 1px solid #333; display: flex; align-items: center; }
         .inp-search { width: 100%; background: #222; border: 1px solid #333; color: #fff; padding: 10px; text-align: center; font-weight: bold; border-radius: 6px; text-transform: uppercase; font-size: 13px; }
         .item-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .item { padding: 12px 20px; border-bottom: 1px solid #1a1a1a; color: #bbb; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        
+        /* ADICIONADO TOUCH-ACTION NAS LISTAS PARA BLOQUEAR A PESQUISA NATIVA */
+        .item { padding: 12px 20px; border-bottom: 1px solid #1a1a1a; color: #bbb; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; touch-action: pan-y; }
         .item.playing { color: var(--gold); font-weight: bold; background: #181818; border-left: 3px solid var(--gold); }
         .fav-icon { float: right; color: var(--gold); margin-left: 10px; }
 
@@ -186,9 +179,9 @@
             </div>
         </div>
         <div class="dash-grid">
-            <div id="m0" class="smart-card focusable" onclick="App.openMode('live')"><i class="fas fa-tv"></i><span>TV AO VIVO</span></div>
-            <div id="m1" class="smart-card focusable" onclick="App.openMode('movie')"><i class="fas fa-film"></i><span>FILMES</span></div>
-            <div id="m2" class="smart-card focusable" onclick="App.openMode('series')"><i class="fas fa-video"></i><span>SÉRIES</span></div>
+            <div id="m0" class="smart-card focusable" role="button" tabindex="-1" onclick="App.openMode('live')"><i class="fas fa-tv"></i><span>TV AO VIVO</span></div>
+            <div id="m1" class="smart-card focusable" role="button" tabindex="-1" onclick="App.openMode('movie')"><i class="fas fa-film"></i><span>FILMES</span></div>
+            <div id="m2" class="smart-card focusable" role="button" tabindex="-1" onclick="App.openMode('series')"><i class="fas fa-video"></i><span>SÉRIES</span></div>
         </div>
         <div class="bottom-bar">
             <div class="info-pill"><span class="lbl">VENCIMENTO</span><span id="info-exp" class="val">...</span></div>
@@ -454,11 +447,12 @@
                 var act = (m==='live')?'get_live_categories':(m==='movie'?'get_vod_categories':'get_series_categories');
                 this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action="+act, function(d){
                     if(d && d!=='ERR_NET') {
-                        var h = '<div class="cat-item" id="c0" data-id="fav" onclick="App.catClick(0)">⭐ FAVORITOS</div>'; var count = 0; var junk = ['adulto','xxx','sex','porn','+18','teste','off','expirado','vencido','manutencao','playback'];
+                        // ADICIONADO role="button" e tabindex="-1" na geração da lista HTML
+                        var h = '<div class="cat-item" role="button" tabindex="-1" id="c0" data-id="fav" onclick="App.catClick(0)">⭐ FAVORITOS</div>'; var count = 0; var junk = ['adulto','xxx','sex','porn','+18','teste','off','expirado','vencido','manutencao','playback'];
                         for(var i=0;i<d.length;i++) {
                             var nome = d[i].category_name; var show = true;
                             if(App.cfg.filter) { var lower = nome.toLowerCase(); for(var j=0; j<junk.length; j++) { if(lower.indexOf(junk[j]) > -1) { show = false; break; } } }
-                            if(show) { count++; h += '<div class="cat-item" id="c'+count+'" data-id="'+d[i].category_id+'" onclick="App.catClick('+count+')">'+nome+'</div>'; }
+                            if(show) { count++; h += '<div class="cat-item" role="button" tabindex="-1" id="c'+count+'" data-id="'+d[i].category_id+'" onclick="App.catClick('+count+')">'+nome+'</div>'; }
                         }
                         document.getElementById('cat-list').innerHTML = h; App.zone=0; App.idx=0; App.updateFocus();
                         
@@ -496,9 +490,10 @@
                 for(var i=0; i<limit; i++) {
                     var n = d[i].name || d[i].title; var id = d[i].stream_id || d[i].series_id;
                     var icn = FavManager.isFav(id) ? '<i class="fas fa-star fav-icon"></i>' : '';
-                    h += '<div class="item" id="row-'+i+'" onclick="App.itemClick('+i+')">'+n+icn+'</div>';
+                    // ADICIONADO role="button" e tabindex="-1" na geração da lista HTML
+                    h += '<div class="item" role="button" tabindex="-1" id="row-'+i+'" onclick="App.itemClick('+i+')">'+n+icn+'</div>';
                 }
-                if(max > this.renderLimit) { h += '<div class="item" id="row-'+limit+'" style="text-align:center; color: var(--gold); font-weight:bold; padding: 25px;" onclick="App.loadMore()">+ CARREGAR MAIS ('+(max - this.renderLimit)+' restantes)</div>'; }
+                if(max > this.renderLimit) { h += '<div class="item" role="button" tabindex="-1" id="row-'+limit+'" style="text-align:center; color: var(--gold); font-weight:bold; padding: 25px;" onclick="App.loadMore()">+ CARREGAR MAIS ('+(max - this.renderLimit)+' restantes)</div>'; }
                 document.getElementById('item-list').innerHTML = h; this.zone = 2; if(!keepIdx) { this.idx = 0; } this.updateFocus();
             },
 
