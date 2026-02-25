@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO</title>
+    <title>R&C GOLD PRO 👑 - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -103,7 +103,8 @@
 
         .col-play { flex: 1; background: #000; display: flex; flex-direction: column; position: relative; height: 100%; }
         .vid-box { width: 100%; height: 50vh; background: #000; position: relative; border-bottom: 2px solid #333; cursor: pointer; }
-        video { width: 100%; height: 100%; background: #000; object-fit: contain !important; }
+        /* Alterado para fill para esticar a tela */
+        video { width: 100%; height: 100%; background: #000; object-fit: fill !important; }
         
         .meta { padding: 20px; flex: 1; background: #080808; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .meta-title { font-size: 20px; color: var(--gold); font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; }
@@ -129,7 +130,7 @@
 
     <div id="login-layer" class="layer flex-center hide">
         <div class="login-box">
-            <div class="logo-txt"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD PRO</span></div>
+            <div class="logo-txt">R&C <span class="gold-text">GOLD PRO</span></div>
             <input type="text" id="i0" class="inp focusable" placeholder="URL DNS" autocomplete="off">
             <input type="text" id="i1" class="inp focusable" placeholder="USUÁRIO" autocomplete="off">
             <input type="password" id="i2" class="inp focusable" placeholder="SENHA" autocomplete="off">
@@ -185,7 +186,7 @@
         </div>
         
         <div class="col-list">
-            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="PESQUISAR..." autocomplete="off" oninput="App.debounceSearch()"></div>
+            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="PESQUISAR (Aperte Enter)..." autocomplete="off"></div>
             <div id="item-list" class="item-list"></div>
         </div>
         
@@ -196,7 +197,7 @@
             </div>
             
             <div class="meta">
-                <div id="meta-title" class="meta-title"><span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i></span>IPTV GOLD PRO</div>
+                <div id="meta-title" class="meta-title">R&C GOLD PRO</div>
                 <div id="meta-epg" class="meta-epg hide"></div>
                 <div id="meta-desc" class="meta-desc"></div>
                 <div class="keys">
@@ -210,19 +211,16 @@
     </div>
 
     <script>
-        // Função aprimorada para ocupar toda a tela no Android e ocultar funções de navegação
         function requestNativeFullscreen(elem) {
             var target = elem || document.documentElement;
             try {
                 if (target.requestFullscreen) { 
-                    // Tenta esconder a barra de navegação (botões do Android) e forçar imersão sobre a câmera
                     target.requestFullscreen({ navigationUI: 'hide' }).catch(function(){}); 
                 } 
                 else if (target.webkitRequestFullscreen) { target.webkitRequestFullscreen(); }
                 else if (target.msRequestFullscreen) { target.msRequestFullscreen(); }
             } catch (e) {}
             
-            // Força a tela deitar (landscape) ao entrar no player se suportado pelo navegador
             try { if(screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(function(){}); } } catch(e) {}
         }
 
@@ -338,7 +336,7 @@
 
         var App = {
             scr: 0, zone: 0, idx: 0, lastCatIdx: 0, creds: {}, fullData: [], storedList: [], memIdx: 0, globalData: null, isFolder: false, seriesEps: [], playingId: null,
-            cfg: { filter: true, format: 'default' }, userInfo: null, lastEnter: 0, renderLimit: 50, touchTimer: null, searchTimer: null,
+            cfg: { filter: true, format: 'default' }, userInfo: null, lastEnter: 0, renderLimit: 50, touchTimer: null,
 
             init: function() {
                 FavManager.init(); setInterval(function() { window.status = "keep_alive_" + new Date().getTime(); }, 40000);
@@ -443,7 +441,6 @@
                         }
                         document.getElementById('cat-list').innerHTML = h; App.zone=0; App.idx=0; App.updateFocus();
                         
-                        // CACHE OCULTO: Pré-carrega todos os filmes/séries em background após 2 segundos
                         setTimeout(function() {
                             if (!App.globalData) {
                                 var actAll = (m==='live')?'get_live_streams':(m==='movie'?'get_vod_streams':'get_series');
@@ -456,7 +453,7 @@
                 });
             },
             
-            resetInfo: function() { document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD PRO'; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
+            resetInfo: function() { document.getElementById('meta-title').innerHTML = 'R&C GOLD PRO'; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
             catClick: function(i) { this.idx=i; this.zone=0; this.renderLimit=50; this.loadContent(i); requestNativeFullscreen(); },
 
             loadContent: function(catIdx) {
@@ -539,19 +536,10 @@
                 }
             },
 
-            // Sistema de Debounce: Otimiza a busca para não travar enquanto o usuário digita
-            debounceSearch: function() {
-                if(this.searchTimer) clearTimeout(this.searchTimer);
-                this.searchTimer = setTimeout(function() { App.doSearch(); }, 500);
-            },
-
             doSearch: function() {
                 var t = document.getElementById('search').value.toLowerCase(); 
                 if(t.length === 0) {
-                    // Retorna para a categoria original caso apague a busca
-                    if(App.lastCatIdx !== undefined) {
-                        App.loadContent(App.lastCatIdx);
-                    }
+                    if(App.lastCatIdx !== undefined) { App.loadContent(App.lastCatIdx); }
                     return;
                 }
                 
@@ -617,7 +605,6 @@
                 else { 
                     b.classList.add('fs'); 
                     App.osd("TELA CHEIA"); 
-                    // Solicita imersão nativa diretamente no box do vídeo, ocupando notch e escondendo botões.
                     requestNativeFullscreen(b); 
                 }
             },
@@ -627,7 +614,6 @@
                 try { 
                     if (document.exitFullscreen) { document.exitFullscreen(); } 
                     else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
-                    // Tenta destravar a orientação ao sair da tela cheia
                     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e){}
                 } catch(e) {}
                 this.syncFocusToPlaying(); 
@@ -638,7 +624,7 @@
             back: function() {
                 if(document.getElementById('vid-box').classList.contains('fs')) { this.exitFull(); return; }
                 if(this.zone===3) { this.zone=2; this.syncFocusToPlaying(); this.updateFocus(); return; }
-                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD PRO'; return; }
+                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerHTML = 'R&C GOLD PRO'; return; }
                 if(this.zone===2) { this.zone=0; this.idx=this.lastCatIdx; this.updateFocus(); return; }
                 if(this.zone===1) { this.zone=2; this.idx=0; this.updateFocus(); return; }
                 if(this.zone===0) { this.setScr(1); return; }
@@ -742,7 +728,6 @@
             if(k===406||k===66||k===275) { e.preventDefault(); App.setScr(1); } 
         });
 
-        /* --- SISTEMA ANTI-TELAS PRESAS --- */
         window.addEventListener('beforeunload', function() {
             PlayerEngine.stop();
         });
