@@ -8,6 +8,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22R%26C%20GOLD%20PRO%22%2C%22short_name%22%3A%22R%26C%20PRO%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23000000%22%2C%22theme_color%22%3A%22%23000000%22%7D">
+    
     <title>R&C GOLD PRO 👑 - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
@@ -32,13 +34,11 @@
 
         button, .smart-card, .cat-item, .item, .power-btn, .key, .toggle-btn { cursor: pointer; }
 
-        /* ACELERAÇÃO DE HARDWARE (GPU) PARA EVITAR SUPERAQUECIMENTO E TRAVAMENTOS DA CPU */
         .cat-list, .item-list, .vid-box, video { transform: translateZ(0); will-change: transform; }
 
         .focused { border: 3px solid #fff !important; background: var(--focus-bg) !important; color: #000 !important; z-index: 50; box-shadow: none !important; }
         #vid-box.focused { border: 4px solid var(--gold) !important; box-shadow: none !important; z-index: 60; }
         
-        /* TELA INFINITA CORRIGIDA (Cobre a câmera e esconde a interface) */
         #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 99999 !important; background: #000; margin: 0 !important; padding: 0 !important; }
         #vid-box.fs video { width: 100% !important; height: 100% !important; object-fit: contain !important; }
         
@@ -151,8 +151,9 @@
             <div class="dash-logo"><i class="fas fa-crown" style="margin-right:8px;"></i>R&C <span>GOLD PRO</span></div>
             <div class="dash-clock"><div id="clock-time" class="clock-time">12:00</div><div id="clock-date" class="clock-date">--/--/----</div></div>
             <div class="top-actions">
-                <div id="m3" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
-                <div id="m4" class="power-btn focusable" onclick="App.logout()"><i class="fas fa-power-off"></i></div>
+                <div id="m3" class="power-btn focusable" onclick="App.toggleGlobalFullscreen()"><i class="fas fa-expand"></i></div>
+                <div id="m4" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
+                <div id="m5" class="power-btn focusable" onclick="App.logout()"><i class="fas fa-power-off"></i></div>
             </div>
         </div>
         <div class="dash-grid">
@@ -177,7 +178,7 @@
         </div>
         
         <div class="col-list">
-            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="PESQUISAR..." autocomplete="off" oninput="App.doSearchDebounced()"></div>
+            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="BUSCA GLOBAL..." autocomplete="off" oninput="App.doSearchDebounced()"></div>
             <div id="item-list" class="item-list"></div>
         </div>
         
@@ -401,6 +402,18 @@
             openSettings: function() { this.setScr(3); this.idx = 0; this.updateFocus(); },
             closeSettings: function() { this.setScr(1); this.idx=3; this.updateFocus(); },
 
+            /* API Global de Fullscreen para Navegadores Mobile */
+            toggleGlobalFullscreen: function() {
+                var doc = document.documentElement;
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    if (doc.requestFullscreen) { doc.requestFullscreen(); } 
+                    else if (doc.webkitRequestFullscreen) { doc.webkitRequestFullscreen(); }
+                } else {
+                    if (document.exitFullscreen) { document.exitFullscreen(); } 
+                    else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                }
+            },
+
             openMode: function(m) {
                 PlayerEngine.stop(); this.resetInfo();
                 this.mode = m; this.setScr(2); this.isFolder = false; this.globalData = null; this.playingId = null;
@@ -418,6 +431,7 @@
                         }
                         document.getElementById('cat-list').innerHTML = h; App.zone=0; App.idx=0; App.updateFocus();
                         
+                        // Busca o Banco de Dados inteiro silenciosamente para a Pesquisa Rápida
                         setTimeout(function() {
                             if (!App.globalData) {
                                 var actAll = (m==='live')?'get_live_streams':(m==='movie'?'get_vod_streams':'get_series');
@@ -513,6 +527,7 @@
                 }
             },
 
+            /* SISTEMA DE BUSCA OTIMIZADO (DEBOUNCE + FILTRO + PROVA VISUAL GLOBAL) */
             doSearchDebounced: function() {
                 var el = document.getElementById('search');
                 if(!el) return;
@@ -528,6 +543,9 @@
             },
             
             executeSearch: function(t) {
+                // Desmarca qualquer categoria ativa para provar que a busca é Global em todo o banco
+                document.querySelectorAll('.cat-item').forEach(function(e){e.classList.remove('active')});
+
                 var normalizeStr = function(str) { return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); };
                 var term = normalizeStr(t);
                 
@@ -588,22 +606,17 @@
                     b.classList.add('fs'); 
                     App.osd("TELA CHEIA"); 
                     
-                    /* TENTA CHAMAR A TELA CHEIA NATIVA DO CELULAR APENAS AQUI */
+                    /* COMANDO DE TELA CHEIA PARA O VÍDEO NO MOBILE */
                     try {
-                        // Para Androids (Chrome/Edge/Samsung)
                         var doc = document.documentElement;
                         if (doc.requestFullscreen) { doc.requestFullscreen(); } 
                         else if (doc.webkitRequestFullscreen) { doc.webkitRequestFullscreen(); }
                         
-                        // Para forçar a tela a virar pro modo paisagem (deitado)
                         if(screen.orientation && screen.orientation.lock) {
                             screen.orientation.lock('landscape').catch(function(){});
                         }
                         
-                        // Para iPhones (iOS Safari usa o player de vídeo nativo obrigatório)
-                        if (v && v.webkitEnterFullscreen) {
-                            v.webkitEnterFullscreen();
-                        }
+                        if (v && v.webkitEnterFullscreen) { v.webkitEnterFullscreen(); }
                     } catch(e) {}
                 }
             },
@@ -611,7 +624,6 @@
             exitFull: function() { 
                 document.getElementById('vid-box').classList.remove('fs'); 
                 
-                /* TENTA SAIR DA TELA CHEIA NATIVA */
                 try {
                     if (document.exitFullscreen) { document.exitFullscreen(); } 
                     else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
@@ -671,7 +683,8 @@
                         if(d===2 && this.idx>0) this.idx--; 
                         if(d===0) { this.idx = 3; } 
                     } else { 
-                        if(d===3 && this.idx === 3) { this.idx = 4; } 
+                        if(d===3 && this.idx === 3) { this.idx = 5; } 
+                        if(d===2 && this.idx === 5) { this.idx = 4; }
                         if(d===2 && this.idx === 4) { this.idx = 3; }
                         if(d===1) { this.idx = 1; } 
                     } 
@@ -694,7 +707,7 @@
             enter: function() {
                 var now = new Date().getTime(); if(now - this.lastEnter < 400) return; this.lastEnter = now;
                 if(this.scr===0) { if(this.idx === 3) this.login(false); else if(this.idx < 3) this.move(1); }
-                if(this.scr===1) { if(this.idx === 4) this.logout(); else if(this.idx === 3) this.openSettings(); else this.openMode(['live','movie','series'][this.idx]); }
+                if(this.scr===1) { if(this.idx === 5) this.logout(); else if(this.idx === 4) this.openSettings(); else if(this.idx === 3) this.toggleGlobalFullscreen(); else this.openMode(['live','movie','series'][this.idx]); }
                 if(this.scr===3) { 
                     if(this.idx === 0) return; 
                     if(this.idx === 1) this.toggleCfg('filter'); 
@@ -734,7 +747,6 @@
             if(k===406||k===66||k===275) { e.preventDefault(); App.setScr(1); } 
         });
 
-        /* --- SISTEMA ANTI-TELAS PRESAS --- */
         window.addEventListener('beforeunload', function() {
             PlayerEngine.stop();
         });
