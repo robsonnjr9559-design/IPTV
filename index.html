@@ -8,8 +8,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22R%26C%20GOLD%20PRO%22%2C%22short_name%22%3A%22R%26C%20PRO%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23000000%22%2C%22theme_color%22%3A%22%23000000%22%7D">
-    
     <title>R&C GOLD PRO 👑 - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
@@ -34,19 +32,29 @@
 
         button, .smart-card, .cat-item, .item, .power-btn, .key, .toggle-btn { cursor: pointer; }
 
+        /* ACELERAÇÃO DE HARDWARE (GPU) PARA EVITAR SUPERAQUECIMENTO E TRAVAMENTOS DA CPU */
         .cat-list, .item-list, .vid-box, video { transform: translateZ(0); will-change: transform; }
 
         .focused { border: 3px solid #fff !important; background: var(--focus-bg) !important; color: #000 !important; z-index: 50; box-shadow: none !important; }
         #vid-box.focused { border: 4px solid var(--gold) !important; box-shadow: none !important; z-index: 60; }
-        
-        #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 99999 !important; background: #000; margin: 0 !important; padding: 0 !important; }
-        #vid-box.fs video { width: 100% !important; height: 100% !important; object-fit: contain !important; }
-        
+        #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100% !important; z-index: 9999 !important; background: #000; }
         .focused i, .focused span, .focused div { color: #000 !important; }
+
+        /* --- ESTILIZAÇÃO DA COROA --- */
+        .logo-wrapper { position: relative; display: inline-block; margin-right: 2px; }
+        .logo-wrapper i.fa-crown {
+            position: absolute;
+            top: -6px;
+            left: -14px;
+            font-size: 15px;
+            transform: rotate(-25deg);
+            color: var(--gold);
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; }
         .logo-txt { font-size: 28px; font-weight: 900; letter-spacing: -1px; color:#fff; margin-bottom: 20px; text-transform: uppercase; }
-        .logo-txt span { color: var(--gold); }
+        .logo-txt span.gold-text { color: var(--gold); }
         .inp { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #444; color: #fff; text-align: center; font-weight: bold; border-radius: 6px; }
         .config-row { display: flex; gap: 10px; margin: 10px 0; }
         .toggle-btn { flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: #888; font-size: 11px; font-weight: 800; text-transform: uppercase; border-radius: 6px; transition: none; }
@@ -58,7 +66,7 @@
         #dash-layer { display: flex; flex-direction: column; padding: 25px 40px; justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; height: 60px; flex-shrink: 0; margin-bottom: 15px; }
         .dash-logo { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
-        .dash-logo span { color: var(--gold); }
+        .dash-logo span.gold-text { color: var(--gold); }
         .dash-clock { text-align: center; }
         .clock-time { font-size: 24px; font-weight: 700; color: #fff; }
         .clock-date { font-size: 12px; color: #888; text-transform: uppercase; font-weight: 600; margin-top: 5px; }
@@ -98,7 +106,7 @@
         video { width: 100%; height: 100%; background: #000; object-fit: contain !important; }
         
         .meta { padding: 20px; flex: 1; background: #080808; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .meta-title { font-size: 20px; color: var(--gold); font-weight: 800; margin-bottom: 8px; }
+        .meta-title { font-size: 20px; color: var(--gold); font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; }
         .meta-epg { font-size: 12px; background: #222; color: #fff; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 12px; align-self: flex-start; }
         .meta-desc { font-size: 13px; color: #777; line-height: 1.4; margin-bottom: 15px; }
         .keys { display: flex; gap: 15px; margin-top: auto; padding-top: 15px; border-top: 1px solid #222; flex-wrap: wrap; }
@@ -121,7 +129,7 @@
 
     <div id="login-layer" class="layer flex-center hide">
         <div class="login-box">
-            <div class="logo-txt"><i class="fas fa-crown" style="margin-right:8px;"></i>R&C <span>GOLD PRO</span></div>
+            <div class="logo-txt"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD PRO</span></div>
             <input type="text" id="i0" class="inp focusable" placeholder="URL DNS" autocomplete="off">
             <input type="text" id="i1" class="inp focusable" placeholder="USUÁRIO" autocomplete="off">
             <input type="password" id="i2" class="inp focusable" placeholder="SENHA" autocomplete="off">
@@ -132,7 +140,7 @@
 
     <div id="settings-layer" class="layer hide flex-center">
         <div class="login-box" style="width: 500px;">
-            <div class="logo-txt"><i class="fas fa-crown" style="margin-right:8px;"></i>MINHA <span>CONTA</span></div>
+            <div class="logo-txt"><i class="fas fa-user-cog" style="margin-right:8px;"></i>MINHA <span class="gold-text">CONTA</span></div>
             <div class="info-row">NOME DE USUÁRIO: <span id="set-user">...</span></div>
             <div class="info-row">DATA DE VENCIMENTO: <span id="set-exp">...</span></div>
             <div class="info-row">LIMITE DE TELAS: <span id="set-conn">...</span></div>
@@ -148,12 +156,11 @@
 
     <div id="dash-layer" class="layer hide">
         <div class="top-bar">
-            <div class="dash-logo"><i class="fas fa-crown" style="margin-right:8px;"></i>R&C <span>GOLD PRO</span></div>
+            <div class="dash-logo"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD PRO</span></div>
             <div class="dash-clock"><div id="clock-time" class="clock-time">12:00</div><div id="clock-date" class="clock-date">--/--/----</div></div>
             <div class="top-actions">
-                <div id="m3" class="power-btn focusable" onclick="App.toggleGlobalFullscreen()"><i class="fas fa-expand"></i></div>
-                <div id="m4" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
-                <div id="m5" class="power-btn focusable" onclick="App.logout()"><i class="fas fa-power-off"></i></div>
+                <div id="m3" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
+                <div id="m4" class="power-btn focusable" onclick="App.logout()"><i class="fas fa-power-off"></i></div>
             </div>
         </div>
         <div class="dash-grid">
@@ -178,7 +185,7 @@
         </div>
         
         <div class="col-list">
-            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="BUSCA GLOBAL..." autocomplete="off" oninput="App.doSearchDebounced()"></div>
+            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="PESQUISAR..." autocomplete="off" oninput="App.debounceSearch()"></div>
             <div id="item-list" class="item-list"></div>
         </div>
         
@@ -189,7 +196,7 @@
             </div>
             
             <div class="meta">
-                <div id="meta-title" class="meta-title"><i class="fas fa-crown" style="color:var(--gold)"></i> R&C GOLD PRO</div>
+                <div id="meta-title" class="meta-title"><span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD PRO</div>
                 <div id="meta-epg" class="meta-epg hide"></div>
                 <div id="meta-desc" class="meta-desc"></div>
                 <div class="keys">
@@ -203,6 +210,22 @@
     </div>
 
     <script>
+        // Função aprimorada para ocupar toda a tela no Android e ocultar funções de navegação
+        function requestNativeFullscreen(elem) {
+            var target = elem || document.documentElement;
+            try {
+                if (target.requestFullscreen) { 
+                    // Tenta esconder a barra de navegação (botões do Android) e forçar imersão sobre a câmera
+                    target.requestFullscreen({ navigationUI: 'hide' }).catch(function(){}); 
+                } 
+                else if (target.webkitRequestFullscreen) { target.webkitRequestFullscreen(); }
+                else if (target.msRequestFullscreen) { target.msRequestFullscreen(); }
+            } catch (e) {}
+            
+            // Força a tela deitar (landscape) ao entrar no player se suportado pelo navegador
+            try { if(screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(function(){}); } } catch(e) {}
+        }
+
         var FavManager = {
             key: 'rc_favs_smart', list: [],
             init: function() { var s = localStorage.getItem(this.key); this.list = s ? JSON.parse(s) : []; },
@@ -368,6 +391,7 @@
                 if(!isAuto) { 
                     document.getElementById('loader').classList.remove('hide'); 
                     document.getElementById('load-txt').innerText = "CONECTANDO..."; 
+                    requestNativeFullscreen(document.documentElement); 
                 } 
                 
                 this.req(h+"/player_api.php?username="+u+"&password="+p, function(d){
@@ -399,23 +423,11 @@
                 this.scr=n; this.zone=0; this.idx=0; this.updateFocus();
             },
 
-            openSettings: function() { this.setScr(3); this.idx = 0; this.updateFocus(); },
+            openSettings: function() { this.setScr(3); this.idx = 0; this.updateFocus(); requestNativeFullscreen(); },
             closeSettings: function() { this.setScr(1); this.idx=3; this.updateFocus(); },
 
-            /* API Global de Fullscreen para Navegadores Mobile */
-            toggleGlobalFullscreen: function() {
-                var doc = document.documentElement;
-                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                    if (doc.requestFullscreen) { doc.requestFullscreen(); } 
-                    else if (doc.webkitRequestFullscreen) { doc.webkitRequestFullscreen(); }
-                } else {
-                    if (document.exitFullscreen) { document.exitFullscreen(); } 
-                    else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-                }
-            },
-
             openMode: function(m) {
-                PlayerEngine.stop(); this.resetInfo();
+                PlayerEngine.stop(); this.resetInfo(); requestNativeFullscreen();
                 this.mode = m; this.setScr(2); this.isFolder = false; this.globalData = null; this.playingId = null;
                 document.getElementById('cat-list').innerHTML = ''; document.getElementById('item-list').innerHTML = '';
                 document.getElementById('search').value = '';
@@ -431,7 +443,7 @@
                         }
                         document.getElementById('cat-list').innerHTML = h; App.zone=0; App.idx=0; App.updateFocus();
                         
-                        // Busca o Banco de Dados inteiro silenciosamente para a Pesquisa Rápida
+                        // CACHE OCULTO: Pré-carrega todos os filmes/séries em background após 2 segundos
                         setTimeout(function() {
                             if (!App.globalData) {
                                 var actAll = (m==='live')?'get_live_streams':(m==='movie'?'get_vod_streams':'get_series');
@@ -444,8 +456,8 @@
                 });
             },
             
-            resetInfo: function() { document.getElementById('meta-title').innerHTML = '<i class="fas fa-crown" style="color:var(--gold)"></i> R&C GOLD PRO'; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
-            catClick: function(i) { this.idx=i; this.zone=0; this.renderLimit=50; this.loadContent(i); },
+            resetInfo: function() { document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD PRO'; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
+            catClick: function(i) { this.idx=i; this.zone=0; this.renderLimit=50; this.loadContent(i); requestNativeFullscreen(); },
 
             loadContent: function(catIdx) {
                 this.lastCatIdx = catIdx; var el = document.getElementById('c'+catIdx); if(!el) return;
@@ -473,7 +485,7 @@
             },
 
             loadMore: function() { this.renderLimit += 50; this.renderList(true); this.idx = this.renderLimit - 50; this.updateFocus(); },
-            itemClick: function(i) { this.idx=i; this.zone=2; this.clickItem(); },
+            itemClick: function(i) { this.idx=i; this.zone=2; this.clickItem(); requestNativeFullscreen(); },
             
             clickItem: function() {
                 if(this.idx >= this.renderLimit && this.idx === Math.min(this.fullData.length, this.renderLimit)) { this.loadMore(); return; }
@@ -486,7 +498,7 @@
                         if(d && d.episodes) {
                             var eps = []; for(var k in d.episodes) for(var j=0; j<d.episodes[k].length; j++) eps.push(d.episodes[k][j]);
                             App.seriesEps = eps; App.fullData = eps; App.isFolder = true; App.renderLimit=150; App.renderList();
-                            document.getElementById('meta-title').innerHTML = '<i class="fas fa-folder-open" style="color:var(--gold); margin-right:8px;"></i>' + (item.name || item.title);
+                            document.getElementById('meta-title').innerText = "📂 " + (item.name || item.title);
                         }
                     });
                 }
@@ -495,7 +507,7 @@
             playStream: function(item) {
                 var type = (this.mode==='live')?'live':(this.mode==='movie'?'movie':'series'); 
                 var id = item.stream_id || item.id; 
-                var ext = (this.mode==='live')?'':(item.container_extension||'mp4'); 
+                var ext = (this.mode==='live')?'m3u8':(item.container_extension||'mp4'); 
                 
                 if (this.mode === 'live') {
                     if (this.cfg.format === 'hls') ext = 'm3u8';
@@ -527,44 +539,47 @@
                 }
             },
 
-            /* SISTEMA DE BUSCA OTIMIZADO (DEBOUNCE + FILTRO + PROVA VISUAL GLOBAL) */
-            doSearchDebounced: function() {
-                var el = document.getElementById('search');
-                if(!el) return;
-                var t = el.value;
+            // Sistema de Debounce: Otimiza a busca para não travar enquanto o usuário digita
+            debounceSearch: function() {
+                if(this.searchTimer) clearTimeout(this.searchTimer);
+                this.searchTimer = setTimeout(function() { App.doSearch(); }, 500);
+            },
+
+            doSearch: function() {
+                var t = document.getElementById('search').value.toLowerCase(); 
+                if(t.length === 0) {
+                    // Retorna para a categoria original caso apague a busca
+                    if(App.lastCatIdx !== undefined) {
+                        App.loadContent(App.lastCatIdx);
+                    }
+                    return;
+                }
+                
                 if(t.length < 2) return; 
                 
                 document.getElementById('item-list').innerHTML = '<div style="padding:25px; text-align:center; color: var(--gold); font-weight: bold; font-size: 14px;"><i class="fas fa-circle-notch fa-spin" style="margin-right:8px;"></i> PROCURANDO...</div>';
-                
-                clearTimeout(this.searchTimer);
-                this.searchTimer = setTimeout(function() {
-                    App.executeSearch(t);
-                }, 500); 
-            },
-            
-            executeSearch: function(t) {
-                // Desmarca qualquer categoria ativa para provar que a busca é Global em todo o banco
-                document.querySelectorAll('.cat-item').forEach(function(e){e.classList.remove('active')});
-
-                var normalizeStr = function(str) { return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); };
-                var term = normalizeStr(t);
                 
                 var cb = function(d) { 
                     if(d && d!=='ERR_NET') { 
                         var res = [];
                         for(var i=0; i<d.length; i++) {
-                            if(normalizeStr(d[i].name||d[i].title).indexOf(term) > -1) { res.push(d[i]); }
+                            if((d[i].name||d[i].title||"").toLowerCase().indexOf(t) > -1) {
+                                res.push(d[i]);
+                            }
                         }
                         App.fullData = res; App.isFolder = false; App.renderLimit = 50; App.renderList(); App.zone = 2; App.idx = 0; App.updateFocus(); 
                     } else {
-                        document.getElementById('item-list').innerHTML = '<div style="padding:20px; text-align:center; color: red;">Erro ao buscar dados. Tente novamente.</div>';
+                        document.getElementById('item-list').innerHTML = '<div style="padding:20px; text-align:center; color: red;">Erro ao buscar dados.</div>';
                     }
                 };
                 
-                if(App.globalData) cb(App.globalData); 
-                else { 
+                if(App.globalData) {
+                    cb(App.globalData); 
+                } else { 
                     var act = (App.mode==='live')?'get_live_streams':(App.mode==='movie'?'get_vod_streams':'get_series'); 
-                    App.req(App.creds.h+"/player_api.php?username="+App.creds.u+"&password="+App.creds.p+"&action="+act, function(d){ App.globalData=d; cb(d); }); 
+                    App.req(App.creds.h+"/player_api.php?username="+App.creds.u+"&password="+App.creds.p+"&action="+act, function(d){ 
+                        App.globalData=d; cb(d); 
+                    }); 
                 }
             },
             
@@ -598,41 +613,23 @@
             toggleFull: function() {
                 if(!this.playingId) return; 
                 var b = document.getElementById('vid-box');
-                var v = document.getElementById('player');
-                
-                if(b.classList.contains('fs')) { 
-                    this.exitFull(); 
-                } else { 
+                if(b.classList.contains('fs')) { this.exitFull(); } 
+                else { 
                     b.classList.add('fs'); 
                     App.osd("TELA CHEIA"); 
-                    
-                    /* COMANDO DE TELA CHEIA PARA O VÍDEO NO MOBILE */
-                    try {
-                        var doc = document.documentElement;
-                        if (doc.requestFullscreen) { doc.requestFullscreen(); } 
-                        else if (doc.webkitRequestFullscreen) { doc.webkitRequestFullscreen(); }
-                        
-                        if(screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('landscape').catch(function(){});
-                        }
-                        
-                        if (v && v.webkitEnterFullscreen) { v.webkitEnterFullscreen(); }
-                    } catch(e) {}
+                    // Solicita imersão nativa diretamente no box do vídeo, ocupando notch e escondendo botões.
+                    requestNativeFullscreen(b); 
                 }
             },
             
             exitFull: function() { 
                 document.getElementById('vid-box').classList.remove('fs'); 
-                
-                try {
+                try { 
                     if (document.exitFullscreen) { document.exitFullscreen(); } 
-                    else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-                    
-                    if(screen.orientation && screen.orientation.unlock) {
-                        screen.orientation.unlock();
-                    }
+                    else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+                    // Tenta destravar a orientação ao sair da tela cheia
+                    try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e){}
                 } catch(e) {}
-                
                 this.syncFocusToPlaying(); 
             },
             
@@ -641,7 +638,7 @@
             back: function() {
                 if(document.getElementById('vid-box').classList.contains('fs')) { this.exitFull(); return; }
                 if(this.zone===3) { this.zone=2; this.syncFocusToPlaying(); this.updateFocus(); return; }
-                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerHTML = '<i class="fas fa-crown" style="color:var(--gold)"></i> R&C GOLD PRO'; return; }
+                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD PRO'; return; }
                 if(this.zone===2) { this.zone=0; this.idx=this.lastCatIdx; this.updateFocus(); return; }
                 if(this.zone===1) { this.zone=2; this.idx=0; this.updateFocus(); return; }
                 if(this.zone===0) { this.setScr(1); return; }
@@ -683,8 +680,7 @@
                         if(d===2 && this.idx>0) this.idx--; 
                         if(d===0) { this.idx = 3; } 
                     } else { 
-                        if(d===3 && this.idx === 3) { this.idx = 5; } 
-                        if(d===2 && this.idx === 5) { this.idx = 4; }
+                        if(d===3 && this.idx === 3) { this.idx = 4; } 
                         if(d===2 && this.idx === 4) { this.idx = 3; }
                         if(d===1) { this.idx = 1; } 
                     } 
@@ -707,7 +703,7 @@
             enter: function() {
                 var now = new Date().getTime(); if(now - this.lastEnter < 400) return; this.lastEnter = now;
                 if(this.scr===0) { if(this.idx === 3) this.login(false); else if(this.idx < 3) this.move(1); }
-                if(this.scr===1) { if(this.idx === 5) this.logout(); else if(this.idx === 4) this.openSettings(); else if(this.idx === 3) this.toggleGlobalFullscreen(); else this.openMode(['live','movie','series'][this.idx]); }
+                if(this.scr===1) { if(this.idx === 4) this.logout(); else if(this.idx === 3) this.openSettings(); else this.openMode(['live','movie','series'][this.idx]); }
                 if(this.scr===3) { 
                     if(this.idx === 0) return; 
                     if(this.idx === 1) this.toggleCfg('filter'); 
@@ -715,8 +711,7 @@
                     if(this.idx === 3) this.closeSettings(); 
                 }
                 if(this.scr===2) {
-                    if(this.zone===0) this.loadContent(this.idx); 
-                    if(this.zone===1) { App.doSearchDebounced(); }
+                    if(this.zone===0) this.loadContent(this.idx); if(this.zone===1) this.doSearch();
                     if(this.zone===2) { var el = document.getElementById('row-'+this.idx); if(el && el.innerText.indexOf('CARREGAR MAIS') > -1) { this.loadMore(); } else { this.clickItem(); } }
                     if(this.zone===3) this.toggleFull(); 
                 }
@@ -726,7 +721,7 @@
         document.addEventListener('keydown', function(e) {
             var k=e.keyCode;
             if(document.activeElement.tagName === 'INPUT' && App.scr === 0) { if(k === 13 || k === 40) { e.preventDefault(); App.move(1); return; } if(k === 38) { e.preventDefault(); App.move(0); return; } return; }
-            if(App.scr === 2 && document.activeElement.tagName === 'INPUT') { if(k === 13) { App.doSearchDebounced(); return; } if(k === 40) { e.preventDefault(); App.zone=2; App.idx=0; App.updateFocus(); return; } return; }
+            if(App.scr === 2 && document.activeElement.tagName === 'INPUT') { if(k === 13) { App.doSearch(); return; } if(k === 40) { e.preventDefault(); App.zone=2; App.idx=0; App.updateFocus(); return; } return; }
             if(App.scr===2 && App.mode!=='live' && document.getElementById('vid-box').classList.contains('fs')) { if(k===39 || k===417) { App.seek(30); return; } if(k===37 || k===412) { App.seek(-30); return; } if(k===13 || k===415 || k===19 || k===179) { App.togglePlay(); return; } }
             if(k===48 || k===96) { if(App.scr===2 && App.zone===2) { var it=App.fullData[App.idx]; if(it) FavManager.toggle(it.stream_id||it.series_id); } }
             
@@ -747,6 +742,7 @@
             if(k===406||k===66||k===275) { e.preventDefault(); App.setScr(1); } 
         });
 
+        /* --- SISTEMA ANTI-TELAS PRESAS --- */
         window.addEventListener('beforeunload', function() {
             PlayerEngine.stop();
         });
