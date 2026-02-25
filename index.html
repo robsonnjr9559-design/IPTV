@@ -10,7 +10,7 @@
     
     <link rel="manifest" href="manifest.json">
     
-    <title>R&C GOLD VIP 👑 - Exclusive Premium</title>
+    <title>R&C GOLD PRO 👑 - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     
@@ -57,8 +57,9 @@
             margin: 0 !important;
         }
 
+        /* CORREÇÃO DO ZOOM: Voltamos para "contain". Mostra o vídeo inteiro, o resto vira borda preta */
         #vid-box.fs video {
-            object-fit: cover !important; /* Estica para não deixar bordas pretas */
+            object-fit: contain !important; 
             width: 100vw !important;
             height: 100vh !important;
             height: 100dvh !important;
@@ -66,7 +67,7 @@
 
         .focused i, .focused span, .focused div { color: #000 !important; }
 
-        /* --- ESTILIZAÇÃO VIP E COROA --- */
+        /* --- ESTILIZAÇÃO PREMIUM E COROA --- */
         .logo-wrapper { position: relative; display: inline-block; margin-right: 2px; }
         .logo-wrapper i.fa-crown {
             position: absolute;
@@ -79,7 +80,7 @@
         }
 
         .gold-text { color: var(--gold); text-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
-        .vip-badge { 
+        .pro-badge { 
             background: linear-gradient(45deg, #FFD700, #B8860B); 
             color: #000; 
             padding: 2px 8px; 
@@ -172,23 +173,23 @@
 
     <div id="loader" class="hide flex-center">
         <i class="fas fa-crown fa-spin" style="font-size:40px; margin-bottom:15px; text-shadow: 0 0 15px rgba(255,215,0,0.5);"></i>
-        <div id="load-txt" style="letter-spacing: 2px;">AUTENTICANDO VIP...</div>
+        <div id="load-txt" style="letter-spacing: 2px;">CARREGANDO...</div>
     </div>
 
     <div id="login-layer" class="layer flex-center hide">
         <div class="login-box">
-            <div class="logo-txt"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD</span> <span class="vip-badge">VIP</span></div>
+            <div class="logo-txt"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD</span> <span class="pro-badge">PRO</span></div>
             <input type="text" id="i0" class="inp focusable" placeholder="URL DNS" autocomplete="off">
             <input type="text" id="i1" class="inp focusable" placeholder="USUÁRIO" autocomplete="off">
             <input type="password" id="i2" class="inp focusable" placeholder="SENHA" autocomplete="off">
-            <button id="i3" class="btn focusable" onclick="App.login(false)">CONECTAR AO SERVIDOR</button>
+            <button id="i3" class="btn focusable" onclick="App.login(false)">CONECTAR</button>
             <div id="msg-login" style="color:#ff4444; margin-top:10px; font-size:12px; font-weight:bold;"></div>
         </div>
     </div>
 
     <div id="settings-layer" class="layer hide flex-center">
         <div class="login-box" style="width: 500px;">
-            <div class="logo-txt"><i class="fas fa-user-shield" style="margin-right:8px; color: var(--gold);"></i>CONTA <span class="gold-text">VIP</span></div>
+            <div class="logo-txt"><i class="fas fa-user-shield" style="margin-right:8px; color: var(--gold);"></i>MINHA <span class="gold-text">CONTA</span></div>
             <div class="info-row">NOME DE USUÁRIO: <span id="set-user">...</span></div>
             <div class="info-row">DATA DE VENCIMENTO: <span id="set-exp">...</span></div>
             <div class="info-row">LIMITE DE TELAS: <span id="set-conn">...</span></div>
@@ -204,7 +205,7 @@
 
     <div id="dash-layer" class="layer hide">
         <div class="top-bar">
-            <div class="dash-logo"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD</span> <span class="vip-badge" style="font-size: 14px;">VIP</span></div>
+            <div class="dash-logo"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD</span> <span class="pro-badge" style="font-size: 14px;">PRO</span></div>
             <div class="dash-clock"><div id="clock-time" class="clock-time">12:00</div><div id="clock-date" class="clock-date">--/--/----</div></div>
             <div class="top-actions">
                 <div id="m3" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
@@ -217,7 +218,7 @@
             <div id="m2" class="smart-card focusable" onclick="App.openMode('series')"><i class="fas fa-video"></i><span>SÉRIES</span></div>
         </div>
         <div class="bottom-bar">
-            <div class="info-pill"><span class="lbl">ASSINATURA VIP</span><span id="info-exp" class="val">...</span></div>
+            <div class="info-pill"><span class="lbl">VENCIMENTO</span><span id="info-exp" class="val">...</span></div>
             <div class="info-pill" style="text-align: right;"><span class="lbl">SESSÕES ATIVAS</span><span id="info-conn" class="val">...</span></div>
         </div>
     </div>
@@ -233,7 +234,7 @@
         </div>
         
         <div class="col-list">
-            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="PESQUISAR ACERVO VIP..." autocomplete="off" oninput="App.debounceSearch()"></div>
+            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="PESQUISAR..." autocomplete="off" oninput="App.debounceSearch()"></div>
             <div id="item-list" class="item-list"></div>
         </div>
         
@@ -244,7 +245,7 @@
             </div>
             
             <div class="meta">
-                <div id="meta-title" class="meta-title"><span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD <span class="vip-badge" style="font-size: 10px;">VIP</span></div>
+                <div id="meta-title" class="meta-title"><span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD <span class="pro-badge" style="font-size: 10px;">PRO</span></div>
                 <div id="meta-epg" class="meta-epg hide"></div>
                 <div id="meta-desc" class="meta-desc"></div>
                 <div class="keys">
@@ -480,7 +481,7 @@
                 var act = (m==='live')?'get_live_categories':(m==='movie'?'get_vod_categories':'get_series_categories');
                 this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action="+act, function(d){
                     if(d && d!=='ERR_NET') {
-                        var h = '<div class="cat-item" id="c0" data-id="fav" onclick="App.catClick(0)">⭐ FAVORITOS VIP</div>'; var count = 0; var junk = ['adulto','xxx','sex','porn','+18','teste','off','expirado','vencido','manutencao','playback'];
+                        var h = '<div class="cat-item" id="c0" data-id="fav" onclick="App.catClick(0)">⭐ FAVORITOS</div>'; var count = 0; var junk = ['adulto','xxx','sex','porn','+18','teste','off','expirado','vencido','manutencao','playback'];
                         for(var i=0;i<d.length;i++) {
                             var nome = d[i].category_name; var show = true;
                             if(App.cfg.filter) { var lower = nome.toLowerCase(); for(var j=0; j<junk.length; j++) { if(lower.indexOf(junk[j]) > -1) { show = false; break; } } }
@@ -500,7 +501,7 @@
                 });
             },
             
-            resetInfo: function() { document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD <span class="vip-badge" style="font-size: 10px;">VIP</span>'; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
+            resetInfo: function() { document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD <span class="pro-badge" style="font-size: 10px;">PRO</span>'; document.getElementById('meta-desc').innerText = ""; document.getElementById('meta-epg').innerText = ""; document.getElementById('meta-epg').classList.add('hide'); var v = document.getElementById('player'); v.removeAttribute('src'); v.load(); },
             catClick: function(i) { this.idx=i; this.zone=0; this.renderLimit=50; this.loadContent(i); requestNativeFullscreen(); },
 
             loadContent: function(catIdx) {
@@ -524,7 +525,7 @@
                     var icn = FavManager.isFav(id) ? '<i class="fas fa-star fav-icon"></i>' : '';
                     h += '<div class="item" id="row-'+i+'" onclick="App.itemClick('+i+')">'+n+icn+'</div>';
                 }
-                if(max > this.renderLimit) { h += '<div class="item" id="row-'+limit+'" style="text-align:center; color: var(--gold); font-weight:bold; padding: 25px;" onclick="App.loadMore()">+ CARREGAR MAIS VIP ('+(max - this.renderLimit)+' restantes)</div>'; }
+                if(max > this.renderLimit) { h += '<div class="item" id="row-'+limit+'" style="text-align:center; color: var(--gold); font-weight:bold; padding: 25px;" onclick="App.loadMore()">+ CARREGAR MAIS ('+(max - this.renderLimit)+' restantes)</div>'; }
                 document.getElementById('item-list').innerHTML = h; this.zone = 2; if(!keepIdx) { this.idx = 0; } this.updateFocus();
             },
 
@@ -658,7 +659,7 @@
                 if(b.classList.contains('fs')) { this.exitFull(); } 
                 else { 
                     b.classList.add('fs'); 
-                    App.osd("MODO VIP (TELA CHEIA)"); 
+                    App.osd("TELA CHEIA"); 
                     requestNativeFullscreen(b); 
                 }
             },
@@ -678,7 +679,7 @@
             back: function() {
                 if(document.getElementById('vid-box').classList.contains('fs')) { this.exitFull(); return; }
                 if(this.zone===3) { this.zone=2; this.syncFocusToPlaying(); this.updateFocus(); return; }
-                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD <span class="vip-badge" style="font-size: 10px;">VIP</span>'; return; }
+                if(this.zone===2 && this.isFolder) { this.isFolder = false; this.fullData = this.storedList; this.renderLimit = 50; this.renderList(true); this.idx = this.memIdx; this.updateFocus(); document.getElementById('meta-title').innerHTML = '<span class="logo-wrapper" style="margin-right:8px;"><i class="fas fa-crown" style="font-size: 11px; top: -3px; left: -10px;"></i>R</span>&C GOLD <span class="pro-badge" style="font-size: 10px;">PRO</span>'; return; }
                 if(this.zone===2) { this.zone=0; this.idx=this.lastCatIdx; this.updateFocus(); return; }
                 if(this.zone===1) { this.zone=2; this.idx=0; this.updateFocus(); return; }
                 if(this.zone===0) { this.setScr(1); return; }
