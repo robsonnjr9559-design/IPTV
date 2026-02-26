@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO - Premium Edition</title>
+    <title>R&C GOLD PRO 👑 - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -387,7 +387,17 @@
                     this.video.pause(); this.video.removeAttribute('src'); this.video.load(); 
                     try {
                         var parent = this.video.parentNode; parent.removeChild(this.video);
-                        var newVid = document.createElement('video'); newVid.id = 'player'; newVid.setAttribute('playsinline', ''); newVid.setAttribute('webkit-playsinline', '');
+                        var newVid = document.createElement('video'); newVid.id = 'player'; 
+                        newVid.setAttribute('playsinline', ''); newVid.setAttribute('webkit-playsinline', '');
+                        
+                        /* --- CORREÇÃO DO BUG DA JANELINHA --- */
+                        /* Injetamos o estilo direto no HTML para a TV não se perder no tamanho */
+                        newVid.style.width = '100%'; 
+                        newVid.style.height = '100%'; 
+                        newVid.style.objectFit = 'fill'; 
+                        newVid.style.backgroundColor = '#000';
+                        newVid.style.display = 'block';
+                        
                         parent.insertBefore(newVid, parent.firstChild); this.video = newVid;
                         this.video.onended = function() { if (App.mode === 'live') { PlayerEngine.recover(); } else if (App.mode === 'series' && App.isFolder && App.idx < App.seriesEps.length-1) { App.idx++; App.updateFocus(); App.playStream(App.seriesEps[App.idx]); } else { App.exitFull(); } };
                     } catch(err) {}
