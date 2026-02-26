@@ -12,8 +12,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@latest/dist/mpegts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@0.14.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
 
     <style>
         * { 
@@ -36,8 +36,6 @@
 
         button, .smart-card, .cat-item, .item, .power-btn, .key, .toggle-btn { cursor: pointer; }
 
-        .vid-box, video { transform: translateZ(0); }
-
         .focused { border: 3px solid #fff !important; background: #FFD700 !important; color: #000 !important; z-index: 50; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important; }
         #vid-box.focused { border: 4px solid #FFD700 !important; box-shadow: inset 0 0 20px rgba(0,0,0,0.8) !important; z-index: 60; }
         #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100% !important; z-index: 9999 !important; background: #000; }
@@ -53,14 +51,15 @@
             background: linear-gradient(45deg, #FFF8DC, #FFD700, #B8860B, #FFD700);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
             transform-origin: bottom center;
             animation: vipPulse 3s infinite alternate ease-in-out;
             pointer-events: none;
         }
 
         @keyframes vipPulse {
-            0% { filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4)); transform: rotate(12deg) scale(1); }
-            100% { filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.9)); transform: rotate(-8deg) scale(1.1); }
+            0% { text-shadow: 0 0 4px rgba(255, 215, 0, 0.4); transform: rotate(12deg) scale(1); }
+            100% { text-shadow: 0 0 16px rgba(255, 215, 0, 0.9); transform: rotate(-8deg) scale(1.1); }
         }
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -137,7 +136,7 @@
 <body onload="App.init()">
 
     <div id="loader" class="hide flex-center">
-        <i class="fas fa-circle-notch fa-spin" style="font-size:45px; margin-bottom:15px; filter: drop-shadow(0 0 10px #FFD700);"></i>
+        <i class="fas fa-circle-notch fa-spin" style="font-size:45px; margin-bottom:15px; text-shadow: 0 0 10px #FFD700;"></i>
         <div id="load-txt" style="letter-spacing: 2px;">CARREGANDO...</div>
     </div>
 
@@ -224,10 +223,24 @@
     </div>
 
     <script>
+        // Função segura para executar vídeos em TVs antigas
+        function safePlay(vidElement) {
+            if (!vidElement) return;
+            try {
+                var p = vidElement.play();
+                if (p !== undefined && typeof p.catch === 'function') {
+                    p.catch(function() {});
+                }
+            } catch (e) {}
+        }
+
         function requestNativeFullscreen(elem) {
             var target = elem || document.documentElement;
             try {
-                if (target.requestFullscreen) { target.requestFullscreen({ navigationUI: 'hide' }).catch(function(){}); } 
+                if (target.requestFullscreen) { 
+                    var p = target.requestFullscreen();
+                    if(p !== undefined && typeof p.catch === 'function') { p.catch(function(){}); }
+                } 
                 else if (target.webkitRequestFullscreen) { target.webkitRequestFullscreen(); }
             } catch (e) {}
         }
@@ -279,11 +292,11 @@
                         });
                         this.tsPlayer.attachMediaElement(this.video);
                         this.tsPlayer.load();
-                        this.tsPlayer.play().catch(function(){});
+                        safePlay(this.video);
                         this.tsPlayer.on(mpegts.Events.ERROR, function() { PlayerEngine.recover(); });
                     } else {
                         this.video.onerror = function() { PlayerEngine.recover(); };
-                        this.video.src = url; this.video.play().catch(function(){});
+                        this.video.src = url; safePlay(this.video);
                     }
                 } else if (url.indexOf('.m3u8') > -1) {
                     this.startMonitor();
@@ -291,15 +304,16 @@
                     var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
                     if (canPlayNative === "probably" || canPlayNative === "maybe") { 
                         this.video.src = url; 
-                        this.video.play().catch(function(){ if(Hls.isSupported()) PlayerEngine.startHls(url); }); 
-                    } else if (Hls.isSupported()) { 
+                        safePlay(this.video);
+                        if(typeof Hls !== 'undefined' && Hls.isSupported()) { PlayerEngine.startHls(url); }
+                    } else if (typeof Hls !== 'undefined' && Hls.isSupported()) { 
                         this.startHls(url); 
                     } else { 
-                        this.video.src = url; this.video.play().catch(function(){}); 
+                        this.video.src = url; safePlay(this.video); 
                     }
                 } else {
                     this.video.onerror = function() { PlayerEngine.recover(); };
-                    this.video.src = url; this.video.play().catch(function(){});
+                    this.video.src = url; safePlay(this.video);
                 }
             },
             startHls: function(url) {
@@ -318,7 +332,7 @@
                     fragLoadingMaxRetry: -1 
                 };
                 this.hls = new Hls(config); this.hls.loadSource(url); this.hls.attachMedia(this.video);
-                this.hls.on(Hls.Events.MANIFEST_PARSED, function() { PlayerEngine.video.play().catch(function(){}); });
+                this.hls.on(Hls.Events.MANIFEST_PARSED, function() { safePlay(PlayerEngine.video); });
                 this.hls.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) { 
                         if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { PlayerEngine.hls.startLoad(); }
@@ -349,9 +363,9 @@
                 if(this.hls) {
                     try { this.hls.recoverMediaError(); this.hls.startLoad(); } catch(e){}
                 } else if(this.tsPlayer) {
-                    try { this.tsPlayer.unload(); this.tsPlayer.load(); this.tsPlayer.play(); } catch(e){}
+                    try { this.tsPlayer.unload(); this.tsPlayer.load(); safePlay(this.video); } catch(e){}
                 } else {
-                    this.video.load(); this.video.play().catch(function(){});
+                    this.video.load(); safePlay(this.video);
                 }
             },
             
@@ -524,7 +538,7 @@
                 var item = this.fullData[this.idx]; if(this.mode !== 'series') { if(item) this.playStream(item); return; }
                 
                 if(item) {
-                    this.storedList = this.fullData.slice(); // CORREÇÃO PARA TV ANTIGA
+                    this.storedList = this.fullData.slice(); 
                     this.memIdx = this.idx; this.page = 0;
                     this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action=get_series_info&series_id="+item.series_id, function(d){
                         if(d && d.episodes) {
@@ -606,7 +620,7 @@
                 }
             },
             
-            togglePlay: function() { var v = document.getElementById('player'); if(v.paused) { v.play(); App.osd("▶ PLAY", 1500); } else { v.pause(); App.osd("⏸ PAUSA", 1500); } },
+            togglePlay: function() { var v = document.getElementById('player'); if(v.paused) { safePlay(v); App.osd("▶ PLAY", 1500); } else { v.pause(); App.osd("⏸ PAUSA", 1500); } },
             seek: function(secs) { var v = document.getElementById('player'); v.currentTime += secs; App.osd(secs > 0 ? ">> " + secs + "s" : "<< " + Math.abs(secs) + "s", 1500); },
 
             toggleFull: function() {
@@ -728,7 +742,6 @@
         });
 
         window.addEventListener('beforeunload', function() { PlayerEngine.hardStop(); });
-        document.addEventListener("visibilitychange", function() { if (document.hidden) { PlayerEngine.hardStop(); } });
     </script>
 </body>
 </html>
