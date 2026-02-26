@@ -45,26 +45,25 @@
         #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100% !important; z-index: 9999 !important; background: #000; }
         .focused i, .focused span, .focused div { color: #000 !important; }
 
-        /* Coroa no O do PRO */
+        /* Coroa EXCLUSIVA no O */
         .logo-wrapper { position: relative; display: inline-block; }
         .logo-wrapper i.fa-crown { 
             position: absolute; 
-            top: -15px; 
-            left: -5px; 
-            font-size: 20px; 
+            top: -16px; 
+            left: 50%; 
+            margin-left: -11px; /* Centraliza baseado na largura do ícone */
+            font-size: 22px; 
             background: linear-gradient(45deg, #FFF8DC, #FFD700, #B8860B, #FFD700);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
-            transform: rotate(18deg);
+            transform-origin: bottom center;
             animation: vipPulse 3s infinite alternate ease-in-out;
-            will-change: transform, filter;
             pointer-events: none;
         }
 
         @keyframes vipPulse {
-            0% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4)); transform: rotate(18deg) scale(1); }
-            100% { filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.9)); transform: rotate(12deg) scale(1.15); }
+            0% { filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4)); transform: rotate(12deg) scale(1); }
+            100% { filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.9)); transform: rotate(-8deg) scale(1.1); }
         }
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -147,7 +146,7 @@
 
     <div id="login-layer" class="layer flex-center hide">
         <div class="login-box">
-            <div class="logo-txt">R&C <span class="gold-text">GOLD PR<span class="logo-wrapper"><i class="fas fa-crown"></i>O</span></span></div>
+            <div class="logo-txt">R&C <span class="gold-text">GOLD PR<span class="logo-wrapper">O<i class="fas fa-crown"></i></span></span></div>
             <input type="text" id="i0" class="inp focusable" placeholder="URL DNS" autocomplete="off">
             <input type="text" id="i1" class="inp focusable" placeholder="USUÁRIO" autocomplete="off">
             <input type="password" id="i2" class="inp focusable" placeholder="SENHA" autocomplete="off">
@@ -174,7 +173,7 @@
 
     <div id="dash-layer" class="layer hide">
         <div class="top-bar">
-            <div class="dash-logo">R&C <span class="gold-text">GOLD PR<span class="logo-wrapper"><i class="fas fa-crown"></i>O</span></span></div>
+            <div class="dash-logo">R&C <span class="gold-text">GOLD PR<span class="logo-wrapper">O<i class="fas fa-crown"></i></span></span></div>
             <div class="dash-clock"><div id="clock-time" class="clock-time">12:00</div><div id="clock-date" class="clock-date">--/--/----</div></div>
             <div class="top-actions">
                 <div id="m3" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
@@ -274,8 +273,8 @@
                         }, {
                             enableWorker: false,
                             enableStashBuffer: true, 
-                            stashInitialSize: 512 * 1024, // Maior para evitar engasgos curtos de rede
-                            liveBufferLatencyChasing: false, // DESATIVADO: Isso causava os saltos e engasgos na CPU da TV
+                            stashInitialSize: 512 * 1024,
+                            liveBufferLatencyChasing: false,
                             lazyLoad: false, 
                             autoCleanupSourceBuffer: true, 
                             autoCleanupMaxBackwardDuration: 4, 
@@ -408,7 +407,6 @@
             },
             updateClock: function() { var now = new Date(); var h = now.getHours(); var m = now.getMinutes(); if(m<10) m='0'+m; var elT = document.getElementById('clock-time'); if(elT) elT.innerText = h + ":" + m; var elD = document.getElementById('clock-date'); if(elD) elD.innerText = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); },
 
-            // Adicionado Limpeza de Cache de Disco (Cache Buster)
             req: function(url, cb) { 
                 var x = new XMLHttpRequest();
                 var cacheBuster = (url.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime(); 
@@ -542,7 +540,7 @@
                 if (this.mode === 'live') {
                     if (this.cfg.format === 'hls') ext = 'm3u8';
                     else if (this.cfg.format === 'ts') ext = 'ts';
-                    else ext = 'm3u8'; // Padrão força HLS para fluidez
+                    else ext = 'm3u8'; 
                 }
                 
                 var url = this.creds.h+"/"+type+"/"+this.creds.u+"/"+this.creds.p+"/"+id; if (ext !== '') { url += "." + ext; }
