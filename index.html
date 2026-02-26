@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/hls.js@0.14.17"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
 
     <style>
         * { 
@@ -223,7 +222,6 @@
     </div>
 
     <script>
-        // Função segura para executar vídeos em TVs antigas
         function safePlay(vidElement) {
             if (!vidElement) return;
             try {
@@ -258,7 +256,7 @@
         };
 
         var PlayerEngine = {
-            hls: null, tsPlayer: null, video: null, url: null, monitorTimer: null, lastTime: 0, stallCount: 0, recoveryTimer: null, 
+            hls: null, video: null, url: null, monitorTimer: null, lastTime: 0, stallCount: 0, recoveryTimer: null, 
 
             init: function() { 
                 this.video = document.getElementById('player'); 
@@ -276,28 +274,11 @@
                 this.video.onerror = null; 
                 
                 if (url.indexOf('.ts') > -1) {
+                    // MODO NATIVO DIRETO (ZERO CPU JS)
                     this.startMonitor(); 
-                    if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
-                        this.tsPlayer = mpegts.createPlayer({ 
-                            type: 'mse', isLive: isLive, url: url 
-                        }, {
-                            enableWorker: false,
-                            enableStashBuffer: true, 
-                            stashInitialSize: 512 * 1024,
-                            liveBufferLatencyChasing: false,
-                            lazyLoad: false, 
-                            autoCleanupSourceBuffer: true, 
-                            autoCleanupMaxBackwardDuration: 4, 
-                            autoCleanupMinBackwardDuration: 2
-                        });
-                        this.tsPlayer.attachMediaElement(this.video);
-                        this.tsPlayer.load();
-                        safePlay(this.video);
-                        this.tsPlayer.on(mpegts.Events.ERROR, function() { PlayerEngine.recover(); });
-                    } else {
-                        this.video.onerror = function() { PlayerEngine.recover(); };
-                        this.video.src = url; safePlay(this.video);
-                    }
+                    this.video.onerror = function() { PlayerEngine.recover(); };
+                    this.video.src = url; 
+                    safePlay(this.video);
                 } else if (url.indexOf('.m3u8') > -1) {
                     this.startMonitor();
                     this.video.onerror = function() { PlayerEngine.recover(); }; 
@@ -362,8 +343,6 @@
                 
                 if(this.hls) {
                     try { this.hls.recoverMediaError(); this.hls.startLoad(); } catch(e){}
-                } else if(this.tsPlayer) {
-                    try { this.tsPlayer.unload(); this.tsPlayer.load(); safePlay(this.video); } catch(e){}
                 } else {
                     this.video.load(); safePlay(this.video);
                 }
@@ -374,7 +353,6 @@
                 var osdEl = document.getElementById('osd'); if(osdEl) osdEl.style.display = 'none'; 
                 this.url = null; this.video.onerror = null; 
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
-                if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
                 if(this.video) { this.video.pause(); this.video.removeAttribute('src'); this.video.load(); } 
             }
         };
