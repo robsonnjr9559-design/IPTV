@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO 👑 - Premium Edition</title>
+    <title>R&C GOLD PRO - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -117,8 +117,10 @@
         .fav-icon { float: right; color: var(--gold); margin-left: 10px; }
 
         .col-play { flex: 1; background: #000; display: flex; flex-direction: column; position: relative; height: 100%; }
-        .vid-box { width: 100%; height: 50vh; background: #000; position: relative; border-bottom: 2px solid #333; cursor: pointer; }
-        video { width: 100%; height: 100%; background: #000; object-fit: fill !important; }
+        
+        /* --- CORREÇÃO DO CSS DA JANELINHA --- */
+        .vid-box { width: 100%; height: 50vh; background: #000; position: relative; border-bottom: 2px solid #333; cursor: pointer; overflow: hidden; }
+        video { width: 100%; height: 100%; background: #000; object-fit: fill !important; position: absolute; top: 0; left: 0; }
         
         .meta { padding: 20px; flex: 1; background: #080808; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .meta-title { font-size: 20px; color: var(--gold); font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; }
@@ -252,10 +254,18 @@
 
         var PlayerEngine = {
             hls: null, tsPlayer: null, video: null, url: null, retryCount: 0, monitorTimer: null, lastTime: 0, stallCount: 0, 
-            recoveryTimer: null, // <-- Variável nova para controlar o loop fantasma
+            recoveryTimer: null, 
 
             init: function() { 
                 this.video = document.getElementById('player'); 
+                
+                // Garantir que a TV saiba lidar com o final do vídeo no novo modelo sem destruição
+                this.video.onended = function() { 
+                    if (App.mode === 'live') { PlayerEngine.recover(); } 
+                    else if (App.mode === 'series' && App.isFolder && App.idx < App.seriesEps.length-1) { 
+                        App.idx++; App.updateFocus(); App.playStream(App.seriesEps[App.idx]); 
+                    } else { App.exitFull(); } 
+                };
             },
             play: function(url, isLive) {
                 if(this.url === url && !this.video.paused) return;
@@ -273,8 +283,9 @@
                         this.tsPlayer = mpegts.createPlayer({ 
                             type: 'mse', isLive: isLive, url: url 
                         }, {
-                            enableWorker: true, 
-                            enableStashBuffer: false, 
+                            enableWorker: false, // Desativado para não causar IPC overhead em TVs fracas
+                            enableStashBuffer: true, // Reativado para absorver falhas
+                            stashInitialSize: 1024 * 1024, // 1MB de buffer inicial
                             liveBufferLatencyChasing: false, 
                             lazyLoad: false,
                             autoCleanupSourceBuffer: true, 
@@ -361,9 +372,9 @@
                 if(this.retryCount > 10 && App.mode !== 'live') { this.stop(); return; }
                 App.osd("RECONECTANDO...");
                 
-                clearTimeout(this.recoveryTimer); // Limpa qualquer reconexão anterior que ficou presa
+                clearTimeout(this.recoveryTimer); 
                 this.recoveryTimer = setTimeout(function(){ 
-                    if(!PlayerEngine.url) return; // Segurança: se a URL foi limpa, não tenta tocar nada
+                    if(!PlayerEngine.url) return; 
                     if(PlayerEngine.url.indexOf('.m3u8') > -1) { 
                         PlayerEngine.startHls(PlayerEngine.url); 
                     } else { 
@@ -375,32 +386,20 @@
             },
             stop: function() { 
                 this.stopMonitor(); 
-                clearTimeout(this.recoveryTimer); // Impede que a reconexão aconteça se você já mudou de tela
+                clearTimeout(this.recoveryTimer); 
                 var osdEl = document.getElementById('osd');
-                if(osdEl) osdEl.style.display = 'none'; // Limpa o aviso da tela imediatamente
-                this.url = null; // Esquece o link do vídeo anterior
+                if(osdEl) osdEl.style.display = 'none'; 
+                this.url = null; 
 
                 this.video.onerror = null; 
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
                 if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
+                
                 if(this.video) { 
-                    this.video.pause(); this.video.removeAttribute('src'); this.video.load(); 
-                    try {
-                        var parent = this.video.parentNode; parent.removeChild(this.video);
-                        var newVid = document.createElement('video'); newVid.id = 'player'; 
-                        newVid.setAttribute('playsinline', ''); newVid.setAttribute('webkit-playsinline', '');
-                        
-                        /* --- CORREÇÃO DO BUG DA JANELINHA --- */
-                        /* Injetamos o estilo direto no HTML para a TV não se perder no tamanho */
-                        newVid.style.width = '100%'; 
-                        newVid.style.height = '100%'; 
-                        newVid.style.objectFit = 'fill'; 
-                        newVid.style.backgroundColor = '#000';
-                        newVid.style.display = 'block';
-                        
-                        parent.insertBefore(newVid, parent.firstChild); this.video = newVid;
-                        this.video.onended = function() { if (App.mode === 'live') { PlayerEngine.recover(); } else if (App.mode === 'series' && App.isFolder && App.idx < App.seriesEps.length-1) { App.idx++; App.updateFocus(); App.playStream(App.seriesEps[App.idx]); } else { App.exitFull(); } };
-                    } catch(err) {}
+                    this.video.pause(); 
+                    this.video.removeAttribute('src'); 
+                    this.video.load(); 
+                    // Fim da destruição do elemento! Mantemos a mesma caixa na tela.
                 } 
             }
         };
@@ -415,10 +414,6 @@
                 if(localStorage.getItem('rc_cfg_format')) this.cfg.format = localStorage.getItem('rc_cfg_format');
                 this.updateCfgUI(); 
                 PlayerEngine.init();
-                
-                document.getElementById('player').onended = function() { 
-                    if (App.mode === 'live') { PlayerEngine.recover(); } else if (App.mode === 'series' && App.isFolder && App.idx < App.seriesEps.length-1) { App.idx++; App.updateFocus(); App.playStream(App.seriesEps[App.idx]); } else { App.exitFull(); }
-                };
                 
                 setInterval(this.updateClock, 1000); this.updateClock();
 
