@@ -16,8 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/mpegts.js@latest/dist/mpegts.min.js"></script>
 
     <style>
-        :root { --bg: #000000; --gold: #FFD700; --gold-dark: #B8860B; --card-bg: #1a1a1a; --focus-bg: #FFD700; }
-        
         * { 
             margin: 0; padding: 0; box-sizing: border-box; outline: none; 
             -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; 
@@ -27,7 +25,7 @@
         input { -webkit-touch-callout: default; -webkit-user-select: auto; -moz-user-select: auto; -ms-user-select: auto; user-select: auto; }
         
         html, body {
-            background-color: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif;
+            background-color: #000000; color: #fff; font-family: 'Montserrat', sans-serif;
             position: fixed; top: 0; left: 0; width: 100vw; height: 100%; 
             overflow: hidden !important; margin: 0; padding: 0;
         }
@@ -40,18 +38,17 @@
 
         .vid-box, video { transform: translateZ(0); }
 
-        .focused { border: 3px solid #fff !important; background: var(--focus-bg) !important; color: #000 !important; z-index: 50; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important; }
-        #vid-box.focused { border: 4px solid var(--gold) !important; box-shadow: inset 0 0 20px rgba(0,0,0,0.8) !important; z-index: 60; }
+        .focused { border: 3px solid #fff !important; background: #FFD700 !important; color: #000 !important; z-index: 50; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important; }
+        #vid-box.focused { border: 4px solid #FFD700 !important; box-shadow: inset 0 0 20px rgba(0,0,0,0.8) !important; z-index: 60; }
         #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100% !important; z-index: 9999 !important; background: #000; }
         .focused i, .focused span, .focused div { color: #000 !important; }
 
-        /* Coroa EXCLUSIVA no O */
         .logo-wrapper { position: relative; display: inline-block; }
         .logo-wrapper i.fa-crown { 
             position: absolute; 
             top: -16px; 
             left: 50%; 
-            margin-left: -11px; /* Centraliza baseado na largura do ícone */
+            margin-left: -11px;
             font-size: 22px; 
             background: linear-gradient(45deg, #FFF8DC, #FFD700, #B8860B, #FFD700);
             -webkit-background-clip: text;
@@ -68,19 +65,19 @@
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .logo-txt { font-size: 28px; font-weight: 900; letter-spacing: -1px; color:#fff; margin-bottom: 20px; text-transform: uppercase; }
-        .logo-txt span.gold-text { color: var(--gold); }
+        .logo-txt span.gold-text { color: #FFD700; }
         .inp { width: 100%; padding: 14px; margin: 8px 0; background: #222; border: 1px solid #444; color: #fff; text-align: center; font-weight: bold; border-radius: 6px; transition: 0.2s; }
         .config-row { display: flex; gap: 10px; margin: 10px 0; }
         .toggle-btn { flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: #888; font-size: 11px; font-weight: 800; text-transform: uppercase; border-radius: 6px; }
-        .toggle-btn.active { border-color: var(--gold); color: var(--gold); background: #222; }
-        .btn { width: 100%; padding: 14px; margin-top: 15px; background: linear-gradient(to right, var(--gold), var(--gold-dark)); color: #000; border: none; cursor: pointer; text-transform: uppercase; font-weight: 900; border-radius: 6px; font-size: 15px; }
+        .toggle-btn.active { border-color: #FFD700; color: #FFD700; background: #222; }
+        .btn { width: 100%; padding: 14px; margin-top: 15px; background: linear-gradient(to right, #FFD700, #B8860B); color: #000; border: none; cursor: pointer; text-transform: uppercase; font-weight: 900; border-radius: 6px; font-size: 15px; }
         .info-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; font-size: 13px; color: #ccc; }
-        .info-row span { font-weight: bold; color: var(--gold); }
+        .info-row span { font-weight: bold; color: #FFD700; }
 
         #dash-layer { display: flex; flex-direction: column; padding: 25px 40px; justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; height: 60px; flex-shrink: 0; margin-bottom: 15px; }
         .dash-logo { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
-        .dash-logo span.gold-text { color: var(--gold); }
+        .dash-logo span.gold-text { color: #FFD700; }
         .dash-clock { text-align: center; }
         .clock-time { font-size: 24px; font-weight: 700; color: #fff; }
         .clock-date { font-size: 12px; color: #888; text-transform: uppercase; font-weight: 600; margin-top: 5px; }
@@ -96,17 +93,17 @@
         .bottom-bar { display: flex; justify-content: space-between; align-items: flex-end; flex-shrink: 0; margin-top: auto; padding-bottom: 10px; }
         .info-pill { background: rgba(255, 255, 255, 0.05); padding: 8px 20px; border-radius: 30px; border: 1px solid #333; }
         .lbl { font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px; }
-        .val { font-size: 14px; color: var(--gold); font-weight: 800; }
+        .val { font-size: 14px; color: #FFD700; font-weight: 800; }
 
         #content-layer { display: flex; position: relative; }
         .col-cat { width: 25%; background: #0b0b0b; border-right: 1px solid #222; display: flex; flex-direction: column; height: 100%; }
-        .cat-head { padding: 12px; background: #111; color: var(--gold); font-weight: 900; border-bottom: 2px solid var(--gold); display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
-        .btn-voltar { background: rgba(255, 255, 255, 0.1); width: 32px; height: 32px; border-radius: 50%; border: 1px solid #333; color: var(--gold); font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .cat-head { padding: 12px; background: #111; color: #FFD700; font-weight: 900; border-bottom: 2px solid #FFD700; display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
+        .btn-voltar { background: rgba(255, 255, 255, 0.1); width: 32px; height: 32px; border-radius: 50%; border: 1px solid #333; color: #FFD700; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
         .cat-title-spacer { width: 32px; } 
         .cat-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         
         .cat-item { padding: 14px 20px; border-bottom: 1px solid #1a1a1a; color: #999; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; touch-action: pan-y; }
-        .cat-item.active { border-left: 5px solid var(--gold); background: #181818; color: #fff; }
+        .cat-item.active { border-left: 5px solid #FFD700; background: #181818; color: #fff; }
 
         .col-list { width: 35%; background: #111; border-right: 1px solid #222; display: flex; flex-direction: column; height: 100%; }
         .search-area { padding: 12px; background: #080808; border-bottom: 1px solid #333; display: flex; align-items: center; }
@@ -114,8 +111,8 @@
         .item-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         
         .item { padding: 14px 20px; border-bottom: 1px solid #1a1a1a; color: #bbb; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; touch-action: pan-y; transition: background 0.2s; }
-        .item.playing { color: var(--gold); font-weight: bold; background: #181818; border-left: 3px solid var(--gold); }
-        .fav-icon { float: right; color: var(--gold); margin-left: 10px; }
+        .item.playing { color: #FFD700; font-weight: bold; background: #181818; border-left: 3px solid #FFD700; }
+        .fav-icon { float: right; color: #FFD700; margin-left: 10px; }
 
         .col-play { flex: 1; background: #000; display: flex; flex-direction: column; position: relative; height: 100%; }
         
@@ -123,15 +120,15 @@
         video { width: 100%; height: 100%; background: #000; object-fit: fill !important; position: absolute; top: 0; left: 0; }
         
         .meta { padding: 20px; flex: 1; background: linear-gradient(to bottom, #080808, #000); display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .meta-title { font-size: 22px; color: var(--gold); font-weight: 900; margin-bottom: 8px; display: flex; align-items: center; letter-spacing: -0.5px; }
-        .meta-epg { font-size: 12px; background: #222; color: #fff; padding: 6px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; align-self: flex-start; font-weight: bold; border-left: 2px solid var(--gold); }
+        .meta-title { font-size: 22px; color: #FFD700; font-weight: 900; margin-bottom: 8px; display: flex; align-items: center; letter-spacing: -0.5px; }
+        .meta-epg { font-size: 12px; background: #222; color: #fff; padding: 6px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; align-self: flex-start; font-weight: bold; border-left: 2px solid #FFD700; }
         .meta-desc { font-size: 13px; color: #888; line-height: 1.5; margin-bottom: 15px; }
         .keys { display: flex; gap: 15px; margin-top: auto; padding-top: 15px; border-top: 1px solid #222; flex-wrap: wrap; }
         .key { font-size: 11px; font-weight: bold; color: #aaa; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
 
-        #loader { background: rgba(0,0,0,0.95); z-index: 20000; flex-direction: column; color: var(--gold); font-weight: 900; }
-        .osd-status { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: var(--gold) !important; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 900; display: none; z-index: 10000; pointer-events: none; letter-spacing: 1px; text-transform: uppercase; }
+        #loader { background: rgba(0,0,0,0.95); z-index: 20000; flex-direction: column; color: #FFD700; font-weight: 900; }
+        .osd-status { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: #FFD700 !important; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 900; display: none; z-index: 10000; pointer-events: none; letter-spacing: 1px; text-transform: uppercase; }
 
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
@@ -140,7 +137,7 @@
 <body onload="App.init()">
 
     <div id="loader" class="hide flex-center">
-        <i class="fas fa-circle-notch fa-spin" style="font-size:45px; margin-bottom:15px; filter: drop-shadow(0 0 10px var(--gold));"></i>
+        <i class="fas fa-circle-notch fa-spin" style="font-size:45px; margin-bottom:15px; filter: drop-shadow(0 0 10px #FFD700);"></i>
         <div id="load-txt" style="letter-spacing: 2px;">CARREGANDO...</div>
     </div>
 
@@ -157,7 +154,7 @@
 
     <div id="settings-layer" class="layer hide flex-center">
         <div class="login-box" style="width: 500px;">
-            <div class="logo-txt"><i class="fas fa-user-shield" style="margin-right:8px; color: var(--gold);"></i>PAINEL <span class="gold-text">VIP</span></div>
+            <div class="logo-txt"><i class="fas fa-user-shield" style="margin-right:8px; color: #FFD700;"></i>PAINEL <span class="gold-text">VIP</span></div>
             <div class="info-row">NOME DE USUÁRIO: <span id="set-user">...</span></div>
             <div class="info-row">DATA DE VENCIMENTO: <span id="set-exp">...</span></div>
             <div class="info-row">LIMITE DE TELAS: <span id="set-conn">...</span></div>
@@ -442,7 +439,9 @@
 
             setScr: function(n) {
                 if(n===1) { PlayerEngine.hardStop(); }
-                document.querySelectorAll('.layer').forEach(function(l){l.classList.add('hide')});
+                var layers = document.querySelectorAll('.layer');
+                for(var i=0; i<layers.length; i++) { layers[i].classList.add('hide'); }
+                
                 if(n===0) document.getElementById('login-layer').classList.remove('hide');
                 if(n===1) document.getElementById('dash-layer').classList.remove('hide');
                 if(n===2) { document.getElementById('content-layer').classList.remove('hide'); document.getElementById('btn-back').classList.remove('hide'); this.page = 0; } 
@@ -480,7 +479,11 @@
 
             loadContent: function(catIdx) {
                 this.page = 0; this.lastCatIdx = catIdx; var el = document.getElementById('c'+catIdx); if(!el) return;
-                var cid = el.getAttribute('data-id'); document.querySelectorAll('.cat-item').forEach(function(e){e.classList.remove('active')}); el.classList.add('active');
+                var cid = el.getAttribute('data-id'); 
+                var catItems = document.querySelectorAll('.cat-item');
+                for(var j=0; j<catItems.length; j++) { catItems[j].classList.remove('active'); }
+                el.classList.add('active');
+                
                 document.getElementById('search').value = ''; document.getElementById('item-list').innerHTML = '';
 
                 var onData = function(d) { if(d && d!=='ERR_NET') { App.fullData = d; App.isFolder = false; App.renderList(); } };
@@ -496,7 +499,7 @@
                 
                 var start = this.page * this.itemsPerPage; var end = Math.min(start + this.itemsPerPage, max); var h = '';
                 
-                if (this.page > 0) h += '<div class="item" role="button" tabindex="-1" id="row-prev" style="text-align:center; color: var(--gold); font-weight:bold; padding: 15px;" onclick="App.prevPage()">▲ PÁGINA ANTERIOR</div>';
+                if (this.page > 0) h += '<div class="item" role="button" tabindex="-1" id="row-prev" style="text-align:center; color: #FFD700; font-weight:bold; padding: 15px;" onclick="App.prevPage()">▲ PÁGINA ANTERIOR</div>';
 
                 for(var i = start; i < end; i++) {
                     var n = d[i].name || d[i].title; var id = d[i].stream_id || d[i].series_id;
@@ -504,7 +507,7 @@
                     h += '<div class="item" role="button" tabindex="-1" id="row-'+i+'" onclick="App.itemClick('+i+')">'+n+icn+'</div>';
                 }
                 
-                if(end < max) h += '<div class="item" role="button" tabindex="-1" id="row-next" style="text-align:center; color: var(--gold); font-weight:bold; padding: 15px;" onclick="App.nextPage()">▼ PRÓXIMA PÁGINA</div>'; 
+                if(end < max) h += '<div class="item" role="button" tabindex="-1" id="row-next" style="text-align:center; color: #FFD700; font-weight:bold; padding: 15px;" onclick="App.nextPage()">▼ PRÓXIMA PÁGINA</div>'; 
                 
                 document.getElementById('item-list').innerHTML = h; this.zone = 2; 
                 if(!keepIdx) { this.idx = this.page > 0 ? 'prev' : start; } 
@@ -521,7 +524,8 @@
                 var item = this.fullData[this.idx]; if(this.mode !== 'series') { if(item) this.playStream(item); return; }
                 
                 if(item) {
-                    this.storedList = [...this.fullData]; this.memIdx = this.idx; this.page = 0;
+                    this.storedList = this.fullData.slice(); // CORREÇÃO PARA TV ANTIGA
+                    this.memIdx = this.idx; this.page = 0;
                     this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action=get_series_info&series_id="+item.series_id, function(d){
                         if(d && d.episodes) {
                             var eps = []; for(var k in d.episodes) for(var j=0; j<d.episodes[k].length; j++) eps.push(d.episodes[k][j]);
@@ -555,7 +559,11 @@
                         }
                     });
                 }
-                PlayerEngine.play(url, this.mode==='live'); document.querySelectorAll('.item').forEach(function(e){e.classList.remove('playing')}); var r = document.getElementById('row-'+this.idx); if(r) r.classList.add('playing'); 
+                PlayerEngine.play(url, this.mode==='live'); 
+                
+                var items = document.querySelectorAll('.item');
+                for(var k=0; k<items.length; k++) { items[k].classList.remove('playing'); }
+                var r = document.getElementById('row-'+this.idx); if(r) r.classList.add('playing'); 
             },
 
             syncFocusToPlaying: function() {
@@ -575,7 +583,7 @@
                 if(t.length === 0) { if(App.lastCatIdx !== undefined) { App.loadContent(App.lastCatIdx); } return; }
                 if(t.length < 2) return; 
                 
-                document.getElementById('item-list').innerHTML = '<div style="padding:25px; text-align:center; color: var(--gold); font-weight: bold;"><i class="fas fa-circle-notch fa-spin"></i> BUSCANDO...</div>';
+                document.getElementById('item-list').innerHTML = '<div style="padding:25px; text-align:center; color: #FFD700; font-weight: bold;"><i class="fas fa-circle-notch fa-spin"></i> BUSCANDO...</div>';
                 
                 var act = (App.mode==='live')?'get_live_streams':(App.mode==='movie'?'get_vod_streams':'get_series'); 
                 App.req(App.creds.h+"/player_api.php?username="+App.creds.u+"&password="+App.creds.p+"&action="+act, function(d){ 
@@ -629,12 +637,22 @@
             },
             
             updateFocus: function() {
-                document.querySelectorAll('.focused').forEach(function(e){e.classList.remove('focused')}); var el;
+                var focusedItems = document.querySelectorAll('.focused');
+                for(var k=0; k<focusedItems.length; k++) { focusedItems[k].classList.remove('focused'); }
+                
+                var el;
                 if(this.scr===0) el=document.getElementById('i'+this.idx); if(this.scr===1) el=document.getElementById('m'+this.idx); if(this.scr===3) el=document.getElementById('s'+this.idx);
                 if(this.scr===2) { if(this.zone===0) el=document.getElementById('c'+this.idx); if(this.zone===1) el=document.getElementById('search'); if(this.zone===2) el=document.getElementById('row-'+this.idx); if(this.zone===3) el=document.getElementById('vid-box'); }
+                
                 if(el) { 
                     el.classList.add('focused'); 
-                    if(el.tagName==='INPUT') { el.focus(); } else { var inps = document.querySelectorAll('input'); for(var i=0;i<inps.length;i++) inps[i].blur(); el.focus(); } 
+                    if(el.tagName==='INPUT') { 
+                        el.focus(); 
+                    } else { 
+                        var inps = document.querySelectorAll('input'); 
+                        for(var i=0; i<inps.length; i++) { inps[i].blur(); } 
+                        el.focus(); 
+                    } 
                     
                     if(el.tagName!=='INPUT') {
                         var parentContainer = el.parentElement;
@@ -693,8 +711,8 @@
 
         document.addEventListener('keydown', function(e) {
             var k=e.keyCode;
-            if(document.activeElement.tagName === 'INPUT' && App.scr === 0) { if(k === 13 || k === 40) { e.preventDefault(); App.move(1); return; } if(k === 38) { e.preventDefault(); App.move(0); return; } return; }
-            if(App.scr === 2 && document.activeElement.tagName === 'INPUT') { if(k === 13) { App.doSearch(); return; } if(k === 40) { e.preventDefault(); App.zone=2; App.idx=0; App.updateFocus(); return; } return; }
+            if(document.activeElement && document.activeElement.tagName === 'INPUT' && App.scr === 0) { if(k === 13 || k === 40) { e.preventDefault(); App.move(1); return; } if(k === 38) { e.preventDefault(); App.move(0); return; } return; }
+            if(App.scr === 2 && document.activeElement && document.activeElement.tagName === 'INPUT') { if(k === 13) { App.doSearch(); return; } if(k === 40) { e.preventDefault(); App.zone=2; App.idx=0; App.updateFocus(); return; } return; }
             if(App.scr===2 && App.mode!=='live' && document.getElementById('vid-box').classList.contains('fs')) { if(k===39 || k===417) { App.seek(30); return; } if(k===37 || k===412) { App.seek(-30); return; } if(k===13 || k===415 || k===19 || k===179) { App.togglePlay(); return; } }
             if(k===48 || k===96) { if(App.scr===2 && App.zone===2) { var it=App.fullData[App.idx]; if(it) FavManager.toggle(it.stream_id||it.series_id); } }
             
