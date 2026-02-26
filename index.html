@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO - Premium Edition</title>
+    <title>R&C GOLD PRO 👑 - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -288,7 +288,6 @@
                 if (url.indexOf('.ts') > -1) {
                     this.startMonitor(); 
                     if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
-                        App.osd("MOT: SOFTWARE (TS)", 3000);
                         this.tsPlayer = mpegts.createPlayer({ 
                             type: 'mse', isLive: isLive, url: url 
                         }, {
@@ -309,7 +308,6 @@
                             PlayerEngine.recover();
                         });
                     } else {
-                        App.osd("MOT: DIRETO (TS)", 3000);
                         this.video.onerror = function() { PlayerEngine.recover(); };
                         this.video.src = url;
                         this.video.play().catch(function(){});
@@ -319,18 +317,15 @@
                     this.video.onerror = function() { PlayerEngine.recover(); }; 
                     var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
                     if (canPlayNative === "probably" || canPlayNative === "maybe") { 
-                        App.osd("MOT: NATIVO (HLS)", 3000);
                         this.video.src = url; 
                         this.video.play().catch(function(){ if(Hls.isSupported()) PlayerEngine.startHls(url); }); 
                     } else if (Hls.isSupported()) { 
                         this.startHls(url); 
                     } else { 
-                        App.osd("MOT: GENÉRICO (HLS)", 3000);
                         this.video.src = url; 
                         this.video.play().catch(function(){}); 
                     }
                 } else {
-                    App.osd("MOT: PADRÃO", 3000);
                     this.video.onerror = function() { PlayerEngine.recover(); };
                     this.video.src = url;
                     this.video.play().catch(function(){});
@@ -338,7 +333,6 @@
             },
             startHls: function(url) {
                 if(this.hls) { this.hls.destroy(); }
-                // OTIMIZAÇÃO ABR: capLevelToPlayerSize força o player a baixar a resolução de acordo com o tamanho da tela, salvando memória em TVs antigas.
                 var config = { 
                     enableWorker: false, 
                     capLevelToPlayerSize: true, 
@@ -353,7 +347,6 @@
                     levelLoadingMaxRetry: -1, 
                     fragLoadingMaxRetry: -1 
                 };
-                App.osd("MOT: HLS.JS (ABR)", 3000);
                 this.hls = new Hls(config); this.hls.loadSource(url); this.hls.attachMedia(this.video);
                 this.hls.on(Hls.Events.MANIFEST_PARSED, function() { 
                     PlayerEngine.retryCount = 0; 
