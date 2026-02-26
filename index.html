@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO 👑 - Premium Edition</title>
+    <title>R&C GOLD PRO - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -251,10 +251,11 @@
         };
 
         var PlayerEngine = {
-            hls: null, tsPlayer: null, video: null, url: null, retryCount: 0, monitorTimer: null, lastTime: 0, stallCount: 0,
+            hls: null, tsPlayer: null, video: null, url: null, retryCount: 0, monitorTimer: null, lastTime: 0, stallCount: 0, 
+            recoveryTimer: null, // <-- Variável nova para controlar o loop fantasma
+
             init: function() { 
                 this.video = document.getElementById('player'); 
-                this.video.onerror = function() { PlayerEngine.recover(); }; 
             },
             play: function(url, isLive) {
                 if(this.url === url && !this.video.paused) return;
@@ -264,18 +265,37 @@
                 if(isLive) { this.video.classList.add('live'); } 
                 else { this.video.classList.remove('live'); }
                 
+                this.video.onerror = null; 
+                
                 if (url.indexOf('.ts') > -1) {
+                    this.startMonitor(); 
                     if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
-                        this.tsPlayer = mpegts.createPlayer({ type: 'mse', isLive: isLive, url: url });
+                        this.tsPlayer = mpegts.createPlayer({ 
+                            type: 'mse', isLive: isLive, url: url 
+                        }, {
+                            enableWorker: true, 
+                            enableStashBuffer: false, 
+                            liveBufferLatencyChasing: false, 
+                            lazyLoad: false,
+                            autoCleanupSourceBuffer: true, 
+                            autoCleanupMaxBackwardDuration: 10, 
+                            autoCleanupMinBackwardDuration: 5
+                        });
                         this.tsPlayer.attachMediaElement(this.video);
                         this.tsPlayer.load();
-                        this.tsPlayer.play().catch(function(e){ console.log(e); });
+                        this.tsPlayer.play().catch(function(){});
+
+                        this.tsPlayer.on(mpegts.Events.ERROR, function() {
+                            PlayerEngine.recover();
+                        });
                     } else {
+                        this.video.onerror = function() { PlayerEngine.recover(); };
                         this.video.src = url;
-                        this.video.play().catch(function(e) { console.log(e); });
+                        this.video.play().catch(function(){});
                     }
                 } else if (url.indexOf('.m3u8') > -1) {
                     this.startMonitor();
+                    this.video.onerror = function() { PlayerEngine.recover(); }; 
                     var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
                     if (canPlayNative === "probably" || canPlayNative === "maybe") { 
                         this.video.src = url; 
@@ -284,18 +304,33 @@
                         this.startHls(url); 
                     } else { 
                         this.video.src = url; 
-                        this.video.play().catch(function(e) { console.log(e); }); 
+                        this.video.play().catch(function(){}); 
                     }
                 } else {
+                    this.video.onerror = function() { PlayerEngine.recover(); };
                     this.video.src = url;
-                    this.video.play().catch(function(e) { console.log(e); });
+                    this.video.play().catch(function(){});
                 }
             },
             startHls: function(url) {
                 if(this.hls) { this.hls.destroy(); }
-                var config = { enableWorker: false, maxBufferLength: 3, maxMaxBufferLength: 5, maxBufferSize: 1 * 1000 * 1000, backBufferLength: 0, startLevel: -1, manifestLoadingTimeOut: 20000, manifestLoadingMaxRetry: 999, manifestLoadingRetryDelay: 3000, fragLoadingTimeOut: 20000, fragLoadingMaxRetry: 999, capLevelToPlayerSize: true, liveSyncDurationCount: 3 };
+                var config = { 
+                    enableWorker: true, 
+                    maxBufferLength: 30, 
+                    maxMaxBufferLength: 60, 
+                    backBufferLength: 0, 
+                    liveSyncDurationCount: 3, 
+                    manifestLoadingTimeOut: 20000, 
+                    manifestLoadingMaxRetry: -1, 
+                    manifestLoadingRetryDelay: 5000, 
+                    levelLoadingMaxRetry: -1, 
+                    fragLoadingMaxRetry: -1 
+                };
                 this.hls = new Hls(config); this.hls.loadSource(url); this.hls.attachMedia(this.video);
-                this.hls.on(Hls.Events.MANIFEST_PARSED, function() { PlayerEngine.retryCount = 0; PlayerEngine.video.play().catch(function(){}); });
+                this.hls.on(Hls.Events.MANIFEST_PARSED, function() { 
+                    PlayerEngine.retryCount = 0; 
+                    PlayerEngine.video.play().catch(function(){}); 
+                });
                 this.hls.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) { 
                         switch (data.type) {
@@ -312,9 +347,10 @@
                     var v = PlayerEngine.video; if(!v || !PlayerEngine.url || v.paused) return;
                     if(Math.abs(v.currentTime - PlayerEngine.lastTime) < 0.1) {
                         PlayerEngine.stallCount++;
-                        if(PlayerEngine.stallCount > 5) { 
+                        if(PlayerEngine.stallCount > 8) { 
                             PlayerEngine.stallCount = 0; 
-                            if(PlayerEngine.hls) { PlayerEngine.hls.recoverMediaError(); PlayerEngine.hls.startLoad(); } else { PlayerEngine.recover(); } 
+                            if(PlayerEngine.hls) { PlayerEngine.hls.recoverMediaError(); PlayerEngine.hls.startLoad(); } 
+                            else { PlayerEngine.recover(); } 
                         }
                     } else { PlayerEngine.stallCount = 0; PlayerEngine.lastTime = v.currentTime; PlayerEngine.retryCount = 0; }
                 }, 2000);
@@ -323,16 +359,28 @@
             recover: function() {
                 this.retryCount++;
                 if(this.retryCount > 10 && App.mode !== 'live') { this.stop(); return; }
-                setTimeout(function(){ 
+                App.osd("RECONECTANDO...");
+                
+                clearTimeout(this.recoveryTimer); // Limpa qualquer reconexão anterior que ficou presa
+                this.recoveryTimer = setTimeout(function(){ 
+                    if(!PlayerEngine.url) return; // Segurança: se a URL foi limpa, não tenta tocar nada
                     if(PlayerEngine.url.indexOf('.m3u8') > -1) { 
                         PlayerEngine.startHls(PlayerEngine.url); 
                     } else { 
-                        var v = document.getElementById('player'); v.load(); PlayerEngine.play(PlayerEngine.url, false); 
+                        var v = document.getElementById('player'); 
+                        v.load(); 
+                        PlayerEngine.play(PlayerEngine.url, App.mode === 'live'); 
                     } 
-                }, 3000);
+                }, 5000);
             },
             stop: function() { 
                 this.stopMonitor(); 
+                clearTimeout(this.recoveryTimer); // Impede que a reconexão aconteça se você já mudou de tela
+                var osdEl = document.getElementById('osd');
+                if(osdEl) osdEl.style.display = 'none'; // Limpa o aviso da tela imediatamente
+                this.url = null; // Esquece o link do vídeo anterior
+
+                this.video.onerror = null; 
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
                 if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
                 if(this.video) { 
@@ -341,7 +389,6 @@
                         var parent = this.video.parentNode; parent.removeChild(this.video);
                         var newVid = document.createElement('video'); newVid.id = 'player'; newVid.setAttribute('playsinline', ''); newVid.setAttribute('webkit-playsinline', '');
                         parent.insertBefore(newVid, parent.firstChild); this.video = newVid;
-                        this.video.onerror = function() { PlayerEngine.recover(); };
                         this.video.onended = function() { if (App.mode === 'live') { PlayerEngine.recover(); } else if (App.mode === 'series' && App.isFolder && App.idx < App.seriesEps.length-1) { App.idx++; App.updateFocus(); App.playStream(App.seriesEps[App.idx]); } else { App.exitFull(); } };
                     } catch(err) {}
                 } 
