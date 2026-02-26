@@ -45,25 +45,26 @@
         #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100% !important; z-index: 9999 !important; background: #000; }
         .focused i, .focused span, .focused div { color: #000 !important; }
 
-        /* Nova Coroa VIP */
-        .logo-wrapper { position: relative; display: inline-block; margin-right: 4px; }
+        /* Coroa no O do PRO */
+        .logo-wrapper { position: relative; display: inline-block; }
         .logo-wrapper i.fa-crown { 
             position: absolute; 
-            top: -12px; 
-            left: -18px; 
-            font-size: 22px; 
+            top: -15px; 
+            left: -5px; 
+            font-size: 20px; 
             background: linear-gradient(45deg, #FFF8DC, #FFD700, #B8860B, #FFD700);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
-            transform: rotate(-15deg);
+            transform: rotate(18deg);
             animation: vipPulse 3s infinite alternate ease-in-out;
             will-change: transform, filter;
+            pointer-events: none;
         }
 
         @keyframes vipPulse {
-            0% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4)); transform: rotate(-15deg) scale(1); }
-            100% { filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.9)); transform: rotate(-10deg) scale(1.15); }
+            0% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4)); transform: rotate(18deg) scale(1); }
+            100% { filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.9)); transform: rotate(12deg) scale(1.15); }
         }
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -146,7 +147,7 @@
 
     <div id="login-layer" class="layer flex-center hide">
         <div class="login-box">
-            <div class="logo-txt"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD PRO</span></div>
+            <div class="logo-txt">R&C <span class="gold-text">GOLD PR<span class="logo-wrapper"><i class="fas fa-crown"></i>O</span></span></div>
             <input type="text" id="i0" class="inp focusable" placeholder="URL DNS" autocomplete="off">
             <input type="text" id="i1" class="inp focusable" placeholder="USUÁRIO" autocomplete="off">
             <input type="password" id="i2" class="inp focusable" placeholder="SENHA" autocomplete="off">
@@ -173,7 +174,7 @@
 
     <div id="dash-layer" class="layer hide">
         <div class="top-bar">
-            <div class="dash-logo"><span class="logo-wrapper"><i class="fas fa-crown"></i>R</span>&C <span class="gold-text">GOLD PRO</span></div>
+            <div class="dash-logo">R&C <span class="gold-text">GOLD PR<span class="logo-wrapper"><i class="fas fa-crown"></i>O</span></span></div>
             <div class="dash-clock"><div id="clock-time" class="clock-time">12:00</div><div id="clock-date" class="clock-date">--/--/----</div></div>
             <div class="top-actions">
                 <div id="m3" class="power-btn focusable" onclick="App.openSettings()"><i class="fas fa-cog"></i></div>
@@ -261,12 +262,10 @@
             },
             play: function(url, isLive) {
                 if(this.url === url && !this.video.paused) return;
-                this.hardStop(); // Limpa completamente a memória anterior
+                this.hardStop(); 
                 this.url = url; this.stallCount = 0; this.video.controls = false; 
-                
                 this.video.onerror = null; 
                 
-                // OTIMIZAÇÃO: Velocidade extrema e Pouca RAM
                 if (url.indexOf('.ts') > -1) {
                     this.startMonitor(); 
                     if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
@@ -275,12 +274,12 @@
                         }, {
                             enableWorker: false,
                             enableStashBuffer: true, 
-                            stashInitialSize: 256 * 1024, // RAM Minimizada
-                            liveBufferLatencyChasing: true, 
-                            lazyLoad: false, // Instant Play
+                            stashInitialSize: 512 * 1024, // Maior para evitar engasgos curtos de rede
+                            liveBufferLatencyChasing: false, // DESATIVADO: Isso causava os saltos e engasgos na CPU da TV
+                            lazyLoad: false, 
                             autoCleanupSourceBuffer: true, 
-                            autoCleanupMaxBackwardDuration: 3, // Força limpeza rápida de RAM
-                            autoCleanupMinBackwardDuration: 1
+                            autoCleanupMaxBackwardDuration: 4, 
+                            autoCleanupMinBackwardDuration: 2
                         });
                         this.tsPlayer.attachMediaElement(this.video);
                         this.tsPlayer.load();
@@ -314,9 +313,9 @@
                     capLevelToPlayerSize: true, 
                     maxBufferLength: 8, 
                     maxMaxBufferLength: 10, 
-                    maxBufferSize: 5 * 1000 * 1000, // Limite agressivo de 5MB (Evita crash de TV)
+                    maxBufferSize: 5 * 1000 * 1000, 
                     backBufferLength: 0, 
-                    liveSyncDurationCount: 2, // Play quase instantâneo
+                    liveSyncDurationCount: 2, 
                     manifestLoadingTimeOut: 15000, 
                     manifestLoadingMaxRetry: -1, 
                     levelLoadingMaxRetry: -1, 
@@ -340,19 +339,17 @@
                         PlayerEngine.stallCount++;
                         if(PlayerEngine.stallCount > 6) { 
                             PlayerEngine.stallCount = 0; 
-                            PlayerEngine.recover(); // Ghost Recovery entra em ação
+                            PlayerEngine.recover(); 
                         }
                     } else { PlayerEngine.stallCount = 0; PlayerEngine.lastTime = v.currentTime; }
                 }, 2000);
             },
             stopMonitor: function() { if(this.monitorTimer) clearInterval(this.monitorTimer); },
             
-            // GHOST RECOVERY: Silencioso, sem tela preta
             recover: function() {
                 if(!this.url) return;
                 clearTimeout(this.recoveryTimer);
                 
-                // Tenta puxar a rede de novo sem destruir a imagem pausada no vídeo
                 if(this.hls) {
                     try { this.hls.recoverMediaError(); this.hls.startLoad(); } catch(e){}
                 } else if(this.tsPlayer) {
@@ -411,7 +408,16 @@
             },
             updateClock: function() { var now = new Date(); var h = now.getHours(); var m = now.getMinutes(); if(m<10) m='0'+m; var elT = document.getElementById('clock-time'); if(elT) elT.innerText = h + ":" + m; var elD = document.getElementById('clock-date'); if(elD) elD.innerText = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); },
 
-            req: function(url, cb) { var x = new XMLHttpRequest(); x.open("GET", url, true); x.timeout = 20000; x.onload = function() { if(x.status===200) { try{cb(JSON.parse(x.responseText));}catch(e){cb(null);} } else cb(null); }; x.onerror = function(){ cb('ERR_NET'); }; x.send(); },
+            // Adicionado Limpeza de Cache de Disco (Cache Buster)
+            req: function(url, cb) { 
+                var x = new XMLHttpRequest();
+                var cacheBuster = (url.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime(); 
+                x.open("GET", url + cacheBuster, true); 
+                x.timeout = 20000; 
+                x.onload = function() { if(x.status===200) { try{cb(JSON.parse(x.responseText));}catch(e){cb(null);} } else cb(null); }; 
+                x.onerror = function(){ cb('ERR_NET'); }; 
+                x.send(); 
+            },
 
             login: function(isAuto) {
                 var h = document.getElementById('i0').value.trim(); var u = document.getElementById('i1').value.trim(); var p = document.getElementById('i2').value.trim();
