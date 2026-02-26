@@ -102,7 +102,6 @@
         .cat-title-spacer { width: 32px; } 
         .cat-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         
-        /* ADICIONADO TOUCH-ACTION NAS LISTAS PARA BLOQUEAR A PESQUISA NATIVA */
         .cat-item { padding: 12px 20px; border-bottom: 1px solid #1a1a1a; color: #999; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; touch-action: pan-y; }
         .cat-item.active { border-left: 5px solid var(--gold); background: #181818; color: #fff; }
 
@@ -111,14 +110,12 @@
         .inp-search { width: 100%; background: #222; border: 1px solid #333; color: #fff; padding: 10px; text-align: center; font-weight: bold; border-radius: 6px; text-transform: uppercase; font-size: 13px; }
         .item-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         
-        /* ADICIONADO TOUCH-ACTION NAS LISTAS PARA BLOQUEAR A PESQUISA NATIVA */
         .item { padding: 12px 20px; border-bottom: 1px solid #1a1a1a; color: #bbb; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; touch-action: pan-y; }
         .item.playing { color: var(--gold); font-weight: bold; background: #181818; border-left: 3px solid var(--gold); }
         .fav-icon { float: right; color: var(--gold); margin-left: 10px; }
 
         .col-play { flex: 1; background: #000; display: flex; flex-direction: column; position: relative; height: 100%; }
         
-        /* --- CORREÇÃO DO CSS DA JANELINHA --- */
         .vid-box { width: 100%; height: 50vh; background: #000; position: relative; border-bottom: 2px solid #333; cursor: pointer; overflow: hidden; }
         video { width: 100%; height: 100%; background: #000; object-fit: fill !important; position: absolute; top: 0; left: 0; }
         
@@ -258,8 +255,6 @@
 
             init: function() { 
                 this.video = document.getElementById('player'); 
-                
-                // Garantir que a TV saiba lidar com o final do vídeo no novo modelo sem destruição
                 this.video.onended = function() { 
                     if (App.mode === 'live') { PlayerEngine.recover(); } 
                     else if (App.mode === 'series' && App.isFolder && App.idx < App.seriesEps.length-1) { 
@@ -280,17 +275,20 @@
                 if (url.indexOf('.ts') > -1) {
                     this.startMonitor(); 
                     if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
+                        // OTIMIZAÇÃO MAXIMA DE MEMÓRIA PARA TS
                         this.tsPlayer = mpegts.createPlayer({ 
                             type: 'mse', isLive: isLive, url: url 
                         }, {
-                            enableWorker: false, // Desativado para não causar IPC overhead em TVs fracas
-                            enableStashBuffer: true, // Reativado para absorver falhas
-                            stashInitialSize: 1024 * 1024, // 1MB de buffer inicial
-                            liveBufferLatencyChasing: false, 
-                            lazyLoad: false,
-                            autoCleanupSourceBuffer: true, 
-                            autoCleanupMaxBackwardDuration: 10, 
-                            autoCleanupMinBackwardDuration: 5
+                            enableWorker: false, // Sem worker para não travar a CPU
+                            enableStashBuffer: false, // ZERO buffer inicial oculto na memória
+                            stashInitialSize: 128, 
+                            liveBufferLatencyChasing: true, 
+                            lazyLoad: true,
+                            lazyLoadMaxDuration: 10,
+                            lazyLoadRecoverDuration: 5,
+                            autoCleanupSourceBuffer: true, // Força a limpeza
+                            autoCleanupMaxBackwardDuration: 2, // Apaga da memória o que já passou (2s)
+                            autoCleanupMinBackwardDuration: 1
                         });
                         this.tsPlayer.attachMediaElement(this.video);
                         this.tsPlayer.load();
@@ -308,9 +306,12 @@
                     this.startMonitor();
                     this.video.onerror = function() { PlayerEngine.recover(); }; 
                     var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
+                    
                     if (canPlayNative === "probably" || canPlayNative === "maybe") { 
                         this.video.src = url; 
-                        this.video.play().catch(function(){ if(Hls.isSupported()) PlayerEngine.startHls(url); }); 
+                        this.video.play().catch(function(){ 
+                            if(Hls.isSupported()) PlayerEngine.startHls(url); 
+                        }); 
                     } else if (Hls.isSupported()) { 
                         this.startHls(url); 
                     } else { 
@@ -325,17 +326,18 @@
             },
             startHls: function(url) {
                 if(this.hls) { this.hls.destroy(); }
+                // OTIMIZAÇÃO MÁXIMA DE MEMÓRIA PARA HLS
                 var config = { 
-                    enableWorker: true, 
-                    maxBufferLength: 30, 
-                    maxMaxBufferLength: 60, 
-                    backBufferLength: 0, 
+                    enableWorker: false, // Fundamental desativar em Smart TVs antigas
+                    maxBufferLength: 8, // Mantém só 8 segundos carregados
+                    maxMaxBufferLength: 12, // Limite rígido absoluto
+                    backBufferLength: 0, // Não guarda o passado
+                    liveBackBufferLength: 0,
                     liveSyncDurationCount: 3, 
                     manifestLoadingTimeOut: 20000, 
-                    manifestLoadingMaxRetry: -1, 
-                    manifestLoadingRetryDelay: 5000, 
-                    levelLoadingMaxRetry: -1, 
-                    fragLoadingMaxRetry: -1 
+                    manifestLoadingMaxRetry: 3, 
+                    levelLoadingMaxRetry: 3, 
+                    fragLoadingMaxRetry: 3 
                 };
                 this.hls = new Hls(config); this.hls.loadSource(url); this.hls.attachMedia(this.video);
                 this.hls.on(Hls.Events.MANIFEST_PARSED, function() { 
@@ -375,7 +377,7 @@
                 clearTimeout(this.recoveryTimer); 
                 this.recoveryTimer = setTimeout(function(){ 
                     if(!PlayerEngine.url) return; 
-                    if(PlayerEngine.url.indexOf('.m3u8') > -1) { 
+                    if(PlayerEngine.url.indexOf('.m3u8') > -1 && Hls.isSupported() && !PlayerEngine.video.canPlayType('application/vnd.apple.mpegurl')) { 
                         PlayerEngine.startHls(PlayerEngine.url); 
                     } else { 
                         var v = document.getElementById('player'); 
@@ -395,11 +397,11 @@
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
                 if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
                 
+                // ESVAZIAMENTO TOTAL DA TAG VIDEO
                 if(this.video) { 
                     this.video.pause(); 
                     this.video.removeAttribute('src'); 
                     this.video.load(); 
-                    // Fim da destruição do elemento! Mantemos a mesma caixa na tela.
                 } 
             }
         };
@@ -409,7 +411,7 @@
             cfg: { filter: true, format: 'default' }, userInfo: null, lastEnter: 0, renderLimit: 50, touchTimer: null,
 
             init: function() {
-                FavManager.init(); setInterval(function() { window.status = "keep_alive_" + new Date().getTime(); }, 40000);
+                FavManager.init(); 
                 if(localStorage.getItem('rc_cfg_filter')) this.cfg.filter = (localStorage.getItem('rc_cfg_filter') === 'true');
                 if(localStorage.getItem('rc_cfg_format')) this.cfg.format = localStorage.getItem('rc_cfg_format');
                 this.updateCfgUI(); 
@@ -499,7 +501,6 @@
                 var act = (m==='live')?'get_live_categories':(m==='movie'?'get_vod_categories':'get_series_categories');
                 this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action="+act, function(d){
                     if(d && d!=='ERR_NET') {
-                        // ADICIONADO role="button" e tabindex="-1" na geração da lista HTML
                         var h = '<div class="cat-item" role="button" tabindex="-1" id="c0" data-id="fav" onclick="App.catClick(0)">⭐ FAVORITOS</div>'; var count = 0; var junk = ['adulto','xxx','sex','porn','+18','teste','off','expirado','vencido','manutencao','playback'];
                         for(var i=0;i<d.length;i++) {
                             var nome = d[i].category_name; var show = true;
@@ -542,7 +543,6 @@
                 for(var i=0; i<limit; i++) {
                     var n = d[i].name || d[i].title; var id = d[i].stream_id || d[i].series_id;
                     var icn = FavManager.isFav(id) ? '<i class="fas fa-star fav-icon"></i>' : '';
-                    // ADICIONADO role="button" e tabindex="-1" na geração da lista HTML
                     h += '<div class="item" role="button" tabindex="-1" id="row-'+i+'" onclick="App.itemClick('+i+')">'+n+icn+'</div>';
                 }
                 if(max > this.renderLimit) { h += '<div class="item" role="button" tabindex="-1" id="row-'+limit+'" style="text-align:center; color: var(--gold); font-weight:bold; padding: 25px;" onclick="App.loadMore()">+ CARREGAR MAIS ('+(max - this.renderLimit)+' restantes)</div>'; }
