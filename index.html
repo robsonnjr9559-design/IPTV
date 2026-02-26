@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <title>R&C GOLD PRO 👑 - Premium Edition</title>
+    <title>R&C GOLD PRO - Premium Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -51,7 +51,6 @@
 
         button, .smart-card, .cat-item, .item, .power-btn, .key, .toggle-btn { cursor: pointer; }
 
-        /* Otimização de VRAM: Removido o will-change e transform das listas */
         .vid-box, video { transform: translateZ(0); }
 
         .focused { border: 3px solid #fff !important; background: var(--focus-bg) !important; color: #000 !important; z-index: 50; box-shadow: none !important; }
@@ -59,7 +58,6 @@
         #vid-box.fs, #vid-box.fs.focused { border: none !important; box-shadow: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100% !important; z-index: 9999 !important; background: #000; }
         .focused i, .focused span, .focused div { color: #000 !important; }
 
-        /* --- ESTILO PREMIUM DA COROA --- */
         .logo-wrapper { position: relative; display: inline-block; margin-right: 2px; }
         .logo-wrapper i.fa-crown { 
             position: absolute; 
@@ -74,16 +72,9 @@
         }
 
         @keyframes brilhoCoroa {
-            0% { 
-                text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); 
-                transform: rotate(-22deg) scale(1); 
-            }
-            100% { 
-                text-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 25px rgba(255, 215, 0, 0.7); 
-                transform: rotate(-18deg) scale(1.1); 
-            }
+            0% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); transform: rotate(-22deg) scale(1); }
+            100% { text-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 25px rgba(255, 215, 0, 0.7); transform: rotate(-18deg) scale(1.1); }
         }
-        /* --------------------------------- */
 
         .login-box { width: 450px; max-width: 90%; padding: 30px; background: #111; border: 1px solid #333; border-radius: 12px; text-align: center; }
         .logo-txt { font-size: 28px; font-weight: 900; letter-spacing: -1px; color:#fff; margin-bottom: 20px; text-transform: uppercase; }
@@ -297,6 +288,7 @@
                 if (url.indexOf('.ts') > -1) {
                     this.startMonitor(); 
                     if (typeof mpegts !== 'undefined' && mpegts.getFeatureList().mseLivePlayback) {
+                        App.osd("MOT: SOFTWARE (TS)", 3000);
                         this.tsPlayer = mpegts.createPlayer({ 
                             type: 'mse', isLive: isLive, url: url 
                         }, {
@@ -317,6 +309,7 @@
                             PlayerEngine.recover();
                         });
                     } else {
+                        App.osd("MOT: DIRETO (TS)", 3000);
                         this.video.onerror = function() { PlayerEngine.recover(); };
                         this.video.src = url;
                         this.video.play().catch(function(){});
@@ -326,15 +319,18 @@
                     this.video.onerror = function() { PlayerEngine.recover(); }; 
                     var canPlayNative = this.video.canPlayType('application/vnd.apple.mpegurl');
                     if (canPlayNative === "probably" || canPlayNative === "maybe") { 
+                        App.osd("MOT: NATIVO (HLS)", 3000);
                         this.video.src = url; 
                         this.video.play().catch(function(){ if(Hls.isSupported()) PlayerEngine.startHls(url); }); 
                     } else if (Hls.isSupported()) { 
                         this.startHls(url); 
                     } else { 
+                        App.osd("MOT: GENÉRICO (HLS)", 3000);
                         this.video.src = url; 
                         this.video.play().catch(function(){}); 
                     }
                 } else {
+                    App.osd("MOT: PADRÃO", 3000);
                     this.video.onerror = function() { PlayerEngine.recover(); };
                     this.video.src = url;
                     this.video.play().catch(function(){});
@@ -342,9 +338,10 @@
             },
             startHls: function(url) {
                 if(this.hls) { this.hls.destroy(); }
-                // OTIMIZAÇÃO: Buffers reduzidos agressivamente para TVs
+                // OTIMIZAÇÃO ABR: capLevelToPlayerSize força o player a baixar a resolução de acordo com o tamanho da tela, salvando memória em TVs antigas.
                 var config = { 
                     enableWorker: false, 
+                    capLevelToPlayerSize: true, 
                     maxBufferLength: 10, 
                     maxMaxBufferLength: 15, 
                     maxBufferSize: 10 * 1000 * 1000, 
@@ -356,6 +353,7 @@
                     levelLoadingMaxRetry: -1, 
                     fragLoadingMaxRetry: -1 
                 };
+                App.osd("MOT: HLS.JS (ABR)", 3000);
                 this.hls = new Hls(config); this.hls.loadSource(url); this.hls.attachMedia(this.video);
                 this.hls.on(Hls.Events.MANIFEST_PARSED, function() { 
                     PlayerEngine.retryCount = 0; 
@@ -389,7 +387,7 @@
             recover: function() {
                 this.retryCount++;
                 if(this.retryCount > 10 && App.mode !== 'live') { this.stop(); return; }
-                App.osd("RECONECTANDO...");
+                App.osd("RECONECTANDO...", 2000);
                 
                 clearTimeout(this.recoveryTimer); 
                 this.recoveryTimer = setTimeout(function(){ 
@@ -414,7 +412,6 @@
                 if(this.hls) { try { this.hls.stopLoad(); this.hls.detachMedia(); this.hls.destroy(); } catch(e) {} this.hls = null; } 
                 if(this.tsPlayer) { try { this.tsPlayer.pause(); this.tsPlayer.unload(); this.tsPlayer.detachMediaElement(); this.tsPlayer.destroy(); } catch(e) {} this.tsPlayer = null; }
                 
-                // OTIMIZAÇÃO: Limpeza forçada de memória de vídeo
                 if(this.video) { 
                     this.video.pause(); 
                     this.video.removeAttribute('src'); 
@@ -427,7 +424,7 @@
         var App = {
             scr: 0, zone: 0, idx: 0, lastCatIdx: 0, creds: {}, fullData: [], storedList: [], memIdx: 0, globalData: null, isFolder: false, seriesEps: [], playingId: null,
             cfg: { filter: true, format: 'default' }, userInfo: null, lastEnter: 0, touchTimer: null,
-            page: 0, itemsPerPage: 50, // Variáveis de paginação real
+            page: 0, itemsPerPage: 50, 
 
             init: function() {
                 FavManager.init(); setInterval(function() { window.status = "keep_alive_" + new Date().getTime(); }, 40000);
@@ -514,7 +511,6 @@
             openMode: function(m) {
                 PlayerEngine.stop(); this.resetInfo(); requestNativeFullscreen();
                 
-                // OTIMIZAÇÃO: Limpa variáveis globais para liberar RAM
                 this.fullData = []; this.globalData = null; this.storedList = []; this.seriesEps = [];
                 this.mode = m; this.setScr(2); this.isFolder = false; this.playingId = null; this.page = 0;
                 
@@ -548,7 +544,7 @@
             catClick: function(i) { this.idx=i; this.zone=0; this.loadContent(i); requestNativeFullscreen(); },
 
             loadContent: function(catIdx) {
-                this.page = 0; // Zera a paginação ao mudar de categoria
+                this.page = 0; 
                 this.lastCatIdx = catIdx; var el = document.getElementById('c'+catIdx); if(!el) return;
                 var cid = el.getAttribute('data-id'); document.querySelectorAll('.cat-item').forEach(function(e){e.classList.remove('active')}); el.classList.add('active');
                 document.getElementById('search').value = ''; document.getElementById('item-list').innerHTML = '';
@@ -561,7 +557,6 @@
                 } else { this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action="+actStr+"&category_id="+cid, onData); }
             },
 
-            // OTIMIZAÇÃO: Paginação real implementada
             renderList: function(keepIdx) {
                 var d = this.fullData; var max = d.length; if(max===0) { document.getElementById('item-list').innerHTML = '<div style="padding:20px;">Vazio</div>'; return; }
                 
@@ -707,8 +702,8 @@
                 }
             },
             
-            togglePlay: function() { var v = document.getElementById('player'); if(v.paused) { v.play(); App.osd("▶ PLAY"); } else { v.pause(); App.osd("⏸ PAUSA"); } },
-            seek: function(secs) { var v = document.getElementById('player'); v.currentTime += secs; App.osd(secs > 0 ? ">> " + secs + "s" : "<< " + Math.abs(secs) + "s"); },
+            togglePlay: function() { var v = document.getElementById('player'); if(v.paused) { v.play(); App.osd("▶ PLAY", 2000); } else { v.pause(); App.osd("⏸ PAUSA", 2000); } },
+            seek: function(secs) { var v = document.getElementById('player'); v.currentTime += secs; App.osd(secs > 0 ? ">> " + secs + "s" : "<< " + Math.abs(secs) + "s", 2000); },
 
             toggleFull: function() {
                 if(!this.playingId) return; 
@@ -716,7 +711,7 @@
                 if(b.classList.contains('fs')) { this.exitFull(); } 
                 else { 
                     b.classList.add('fs'); 
-                    App.osd("TELA CHEIA"); 
+                    App.osd("TELA CHEIA", 2000); 
                     requestNativeFullscreen(b); 
                 }
             },
@@ -731,7 +726,13 @@
                 this.syncFocusToPlaying(); 
             },
             
-            osd: function(t) { var o=document.getElementById('osd'); o.innerText=t; o.style.display='block'; setTimeout(function(){o.style.display='none'},2000); },
+            osd: function(t, duration) { 
+                var o=document.getElementById('osd'); 
+                o.innerText=t; 
+                o.style.display='block'; 
+                var time = duration || 2000;
+                setTimeout(function(){o.style.display='none'}, time); 
+            },
             
             back: function() {
                 if(document.getElementById('vid-box').classList.contains('fs')) { this.exitFull(); return; }
